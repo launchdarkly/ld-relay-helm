@@ -2,14 +2,14 @@
 apiVersion: autoscaling/v2beta1
 kind: HorizontalPodAutoscaler
 metadata:
-  name: {{ include "ld-relay-helm.fullname" . }}
+  name: {{ include "ld-relay.fullname" . }}
   labels:
-    {{- include "ld-relay-helm.labels" . | nindent 4 }}
+    {{- include "ld-relay.labels" . | nindent 4 }}
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: {{ include "ld-relay-helm.fullname" . }}
+    name: {{ include "ld-relay.fullname" . }}
   minReplicas: {{ .Values.autoscaling.minReplicas }}
   maxReplicas: {{ .Values.autoscaling.maxReplicas }}
   metrics:

@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "ld-relay-helm.fullname" . }}
+  name: {{ include "ld-relay.fullname" . }}
   labels:
-    {{- include "ld-relay-helm.labels" . | nindent 4 }}
+    {{- include "ld-relay.labels" . | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
   ports:
@@ -14,4 +14,4 @@ spec:
        targetPort: {{ .targetPort }}
     {{- end }}
   selector:
-    {{- include "ld-relay-helm.selectorLabels" . | nindent 4 }}
+    {{- include "ld-relay.selectorLabels" . | nindent 4 }}

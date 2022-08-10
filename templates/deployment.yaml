@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "ld-relay-helm.fullname" . }}
+  name: {{ include "ld-relay.fullname" . }}
   labels:
-    {{- include "ld-relay-helm.labels" . | nindent 4 }}
+    {{- include "ld-relay.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "ld-relay-helm.selectorLabels" . | nindent 6 }}
+      {{- include "ld-relay.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -18,24 +18,24 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "ld-relay-helm.selectorLabels" . | nindent 8 }}
+        {{- include "ld-relay.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       volumes:
-      - name: {{ include "ld-relay-helm.name" . }}-config
+      - name: {{ include "ld-relay.name" . }}-config
         configMap:
-          name: {{ include "ld-relay-helm.name" . }}-config
-      serviceAccountName: {{ include "ld-relay-helm.serviceAccountName" . }}
+          name: {{ include "ld-relay.name" . }}-config
+      serviceAccountName: {{ include "ld-relay.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
         - name: {{ .Chart.Name }}
           envFrom:
             - configMapRef:
-                name: {{ include "ld-relay-helm.name" . }}-config
+                name: {{ include "ld-relay.name" . }}-config
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
