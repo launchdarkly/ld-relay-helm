@@ -39,8 +39,7 @@ securityContext: {}
 service:
   type: ClusterIP
   ports:
-    # NOTE: You can change the port values, but you should leave the name as
-    # api since it is referenced by other parts of this configuration.
+    # WARN: Do not modify the name of this port mapping. It is referenced by other parts of this configuration
     - port: 8030
       targetPort: 8030
       protocol: TCP
@@ -63,6 +62,11 @@ ingress:
   #       - path: /
   #         pathType: ImplementationSpecific
   #         port: 8030
+  #   - host: prometheus.ld-relay.local
+  #     paths:
+  #       - path: /
+  #         pathType: ImplementationSpecific
+  #         port: 8031
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
@@ -95,5 +99,6 @@ affinity: {}
 
 relay:
   # Specify the relay environment variables here to load them into this chart's ConfigMap directly.
+  # These environment variables should match the ones documented by the relay proxy at https://github.com/launchdarkly/ld-relay
   environment: {}
     # LD_ENV_MyEnvironment: your-sdk-key
