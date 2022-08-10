@@ -7,9 +7,11 @@ metadata:
 spec:
   type: {{ .Values.service.type }}
   ports:
-    - port: {{ .Values.service.port }}
-      targetPort: http
-      protocol: TCP
-      name: http
+    {{- range .Values.service.ports }}
+     - port: {{ .port }}
+       protocol: {{ .protocol }}
+       name: {{ .name }}
+       targetPort: {{ .targetPort }}
+    {{- end }}
   selector:
     {{- include "ld-relay-helm.selectorLabels" . | nindent 4 }}

@@ -24,27 +24,36 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      volumes:
+      - name: {{ include "ld-relay-helm.name" . }}-config
+        configMap:
+          name: {{ include "ld-relay-helm.name" . }}-config
       serviceAccountName: {{ include "ld-relay-helm.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
         - name: {{ .Chart.Name }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "ld-relay-helm.name" . }}-config
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
-            - name: http
-              containerPort: 80
-              protocol: TCP
+            {{- range .Values.service.ports }}
+              - containerPort: {{ .targetPort }}
+                protocol: {{ .protocol }}
+                name: {{ .name }}
+            {{- end }}
           livenessProbe:
             httpGet:
-              path: /
-              port: http
+              path: /status
+              port: api
           readinessProbe:
             httpGet:
-              path: /
-              port: http
+              path: /status
+              port: api
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}

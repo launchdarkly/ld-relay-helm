@@ -5,7 +5,7 @@
 replicaCount: 1
 
 image:
-  repository: nginx
+  repository: launchdarkly/ld-relay
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
@@ -38,7 +38,18 @@ securityContext: {}
 
 service:
   type: ClusterIP
-  port: 80
+  ports:
+    # NOTE: You can change the port values, but you should leave the name as
+    # api since it is referenced by other parts of this configuration.
+    - port: 8030
+      targetPort: 8030
+      protocol: TCP
+      name: api
+    # Enable these ports for prometheus support
+    # - port: 8031
+    #   targetPort: 8031
+    #   protocol: TCP
+    #   name: prometheus
 
 ingress:
   enabled: false
@@ -46,11 +57,12 @@ ingress:
   annotations: {}
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
-  hosts:
-    - host: chart-example.local
-      paths:
-        - path: /
-          pathType: ImplementationSpecific
+  hosts: []
+  #   - host: api.ld-relay.local
+  #     paths:
+  #       - path: /
+  #         pathType: ImplementationSpecific
+  #         port: 8030
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
@@ -80,3 +92,8 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+relay:
+  # Specify the relay environment variables here to load them into this chart's ConfigMap directly.
+  environment: {}
+    # LD_ENV_MyEnvironment: your-sdk-key
