@@ -101,4 +101,10 @@ relay:
   # Specify the relay environment variables here to load them into this chart's ConfigMap directly.
   # These environment variables should match the ones documented by the relay proxy at https://github.com/launchdarkly/ld-relay
   environment: {}
+  # Specify name and secret key pairs to set environment variables directly on the relay container
+  secrets: []
+    # - envName: REDIS_PASSWORD
+    #   secretName: relay-proxy
+    #   secretKey: redis-password
+
     # LD_ENV_MyEnvironment: your-sdk-key

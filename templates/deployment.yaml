@@ -33,6 +33,14 @@ spec:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
         - name: {{ .Chart.Name }}
+          env:
+            {{- range .Values.relay.secrets }}
+              - name: {{ .envName }}
+                valueFrom:
+                    secretKeyRef:
+                      key: {{ .secretKey }}
+                      name: {{ .secretName }}
+            {{- end }}
           envFrom:
             - configMapRef:
                 name: {{ include "ld-relay.name" . }}-config
