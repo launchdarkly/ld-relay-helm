@@ -51,8 +51,8 @@ The relay proxy is controlled through environment variables. These can be set di
 | autoscaling.enabled                             | bool    | `false`                                                      | Enable HorizontalPodAutoscaler                                                 |
 | autoscaling.minReplicas                         | integer | `1`                                                          | Set minimum number of running replicas                                         |
 | autoscaling.maxReplicas                         | integer | `100`                                                        | Set maximum number of running replicas                                         |
-| autoscaling.targetCPUUtilizationPercentage      | integer | `80`                                                         | Configure CPU as a metrics resource                                            |
-| # autoscaling.targetMemoryUtilizationPercentage | integer | `80`                                                         | Configure memory as a metrics resource                                         |
+| autoscaling.targetCPUUtilizationPercentage      | integer | `80`                                                         | Configure CPU as an average utilization metrics resource                       |
+| autoscaling.targetMemoryUtilizationPercentage   | integer | `80`                                                         | Configure memory as an average utilization metrics resource                    |
 | nodeSelector                                    | object  | `{}`                                                         | Selector to target node placement for the relay pod                            |
 | tolerations                                     | array   | `[]`                                                         | Specify pod tolerations                                                        |
 | affinity                                        | object  | `{}`                                                         | Specify pod affinity                                                           |
