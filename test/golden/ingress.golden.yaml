@@ -1,0 +1,30 @@
+---
+# Source: ld-relay/templates/ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ld-relay-test
+  labels:
+    app.kubernetes.io/name: ld-relay
+    app.kubernetes.io/instance: ld-relay-test
+    app.kubernetes.io/version: "6.7.12"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  rules:
+    - host: "ld-relay.local"
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: ld-relay-test
+                port:
+                  number: 8030
+          - path: /prometheus
+            pathType: Prefix
+            backend:
+              service:
+                name: ld-relay-test
+                port:
+                  number: 8031
