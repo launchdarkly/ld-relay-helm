@@ -1,0 +1,54 @@
+---
+# Source: ld-relay/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ld-relay-test
+  labels:
+    app.kubernetes.io/name: ld-relay
+    app.kubernetes.io/instance: ld-relay-test
+    app.kubernetes.io/version: "6.7.12"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ld-relay
+      app.kubernetes.io/instance: ld-relay-test
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ld-relay
+        app.kubernetes.io/instance: ld-relay-test
+    spec:
+      volumes:
+      - name: ld-relay-config
+        configMap:
+          name: ld-relay-config
+      serviceAccountName: ld-relay-test
+      securityContext:
+        {}
+      containers:
+        - name: ld-relay
+          env:
+          envFrom:
+            - configMapRef:
+                name: ld-relay-config
+          securityContext:
+            {}
+          image: "launchdarkly/ld-relay:6.7.12"
+          imagePullPolicy: IfNotPresent
+          ports:
+              - containerPort: 8030
+                protocol: TCP
+                name: api
+          livenessProbe:
+            httpGet:
+              path: /status
+              port: api
+          readinessProbe:
+            httpGet:
+              path: /status
+              port: api
+          resources:
+            {}
