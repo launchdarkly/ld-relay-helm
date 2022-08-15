@@ -5,8 +5,6 @@ import (
 	"strings"
 	"testing"
 
-	"ld-relay-helm/test/golden"
-
 	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -20,7 +18,7 @@ func TestGoldenDefaultsTemplate(t *testing.T) {
 	templateNames := []string{"config", "deployment", "service", "serviceaccount"}
 
 	for _, name := range templateNames {
-		suite.Run(t, &golden.TemplateGoldenTest{
+		suite.Run(t, &TemplateGoldenTest{
 			ChartPath:      chartPath,
 			Release:        "ld-relay-test",
 			Namespace:      "ld-relay-" + strings.ToLower(random.UniqueId()),
@@ -36,7 +34,7 @@ func TestGoldenIngressWithBaseConfiguration(t *testing.T) {
 	chartPath, err := filepath.Abs("../")
 	require.NoError(t, err)
 
-	suite.Run(t, &golden.TemplateGoldenTest{
+	suite.Run(t, &TemplateGoldenTest{
 		ChartPath:      chartPath,
 		Release:        "ld-relay-test",
 		Namespace:      "ld-relay-" + strings.ToLower(random.UniqueId()),

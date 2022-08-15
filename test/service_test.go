@@ -3,38 +3,10 @@ package test
 import (
 	"github.com/gruntwork-io/terratest/modules/helm"
 	"github.com/gruntwork-io/terratest/modules/k8s"
-	"github.com/gruntwork-io/terratest/modules/random"
-	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/suite"
 	corev1 "k8s.io/api/core/v1"
-	"path/filepath"
-	"strings"
-	"testing"
 )
 
-type serviceTest struct {
-	suite.Suite
-	chartPath string
-	release   string
-	namespace string
-	templates []string
-}
-
-func TestServiceTemplate(t *testing.T) {
-	t.Parallel()
-
-	chartPath, err := filepath.Abs("../")
-	require.NoError(t, err)
-
-	suite.Run(t, &serviceTest{
-		chartPath: chartPath,
-		release:   "ld-relay-test",
-		namespace: "ld-relay-" + strings.ToLower(random.UniqueId()),
-		templates: []string{"templates/service.yaml"},
-	})
-}
-
-func (s *serviceTest) TestServiceSupportsMultiplePorts() {
+func (s *TemplateTest) TestServiceSupportsMultiplePorts() {
 	options := &helm.Options{
 		SetValues: map[string]string{
 			"service.ports[0].port":       "80",
@@ -46,10 +18,10 @@ func (s *serviceTest) TestServiceSupportsMultiplePorts() {
 			"service.ports[1].name":       "prometheus",
 			"service.ports[1].targetPort": "8088",
 		},
-		KubectlOptions: k8s.NewKubectlOptions("", "", s.namespace),
+		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
 	}
 
-	output := helm.RenderTemplate(s.T(), options, s.chartPath, s.release, s.templates)
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, s.Templates)
 	var service corev1.Service
 	helm.UnmarshalK8SYaml(s.T(), output, &service)
 

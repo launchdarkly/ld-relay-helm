@@ -1,14 +1,12 @@
-package golden
+package test
 
 import (
 	"flag"
-	"io/ioutil"
-
-	"regexp"
-
 	"github.com/gruntwork-io/terratest/modules/helm"
 	"github.com/gruntwork-io/terratest/modules/k8s"
 	"github.com/stretchr/testify/suite"
+	"io/ioutil"
+	"regexp"
 )
 
 var update = flag.Bool("update-golden", false, "update golden test output files")
@@ -45,4 +43,12 @@ func (s *TemplateGoldenTest) TestContainerGoldenTestDefaults() {
 	// then
 	s.Require().NoError(err, "Golden file doesn't exist or was not readable")
 	s.Require().Equal(string(expected), output)
+}
+
+type TemplateTest struct {
+	suite.Suite
+	ChartPath string
+	Release   string
+	Namespace string
+	Templates []string
 }
