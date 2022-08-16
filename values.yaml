@@ -1,11 +1,12 @@
-# Default values for ld-relay-helm.
+# Default values for ld-relay.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
 replicaCount: 1
 
 image:
-  repository: nginx
+  # Use the official LaunchDarkly relay proxy image
+  repository: launchdarkly/ld-relay
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
@@ -38,7 +39,17 @@ securityContext: {}
 
 service:
   type: ClusterIP
-  port: 80
+  ports:
+    # WARN: Do not modify the name of this port mapping. It is referenced by other parts of this configuration
+    - port: 8030
+      targetPort: 8030
+      protocol: TCP
+      name: api
+    # Prometheus support requires exposing additional ports
+    # - port: 8031
+    #   targetPort: 8031
+    #   protocol: TCP
+    #   name: prometheus
 
 ingress:
   enabled: false
@@ -46,11 +57,19 @@ ingress:
   annotations: {}
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
-  hosts:
-    - host: chart-example.local
-      paths:
-        - path: /
-          pathType: ImplementationSpecific
+  hosts: []
+  # Exposing the relay allows for access outside of the cluster
+  #   - host: api.ld-relay.local
+  #     paths:
+  #       - path: /
+  #         pathType: ImplementationSpecific
+  #         port: 8030
+  # You may optionally need to expose the Prometheus endpoint as well
+  #   - host: prometheus.ld-relay.local
+  #     paths:
+  #       - path: /
+  #         pathType: ImplementationSpecific
+  #         port: 8031
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
@@ -73,10 +92,24 @@ autoscaling:
   minReplicas: 1
   maxReplicas: 100
   targetCPUUtilizationPercentage: 80
-  # targetMemoryUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
 
 nodeSelector: {}
 
 tolerations: []
 
 affinity: {}
+
+relay:
+  # Specify the relay environment variables here to load them into this chart's ConfigMap directly.
+  # These environment variables should match the ones documented by the relay proxy at https://github.com/launchdarkly/ld-relay
+  environment: {}
+    # LD_ENV_MyEnvironment: your-sdk-key
+    # USE_REDIS: true
+
+  # Set environment variables in the relay container with values pulled from k8s secrets
+  # These environment variables should match the ones documented by the relay proxy at https://github.com/launchdarkly/ld-relay
+  secrets: []
+    # - envName: REDIS_PASSWORD
+    #   secretName: relay-proxy
+    #   secretKey: redis-password
