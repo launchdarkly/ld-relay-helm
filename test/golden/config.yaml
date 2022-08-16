@@ -1,0 +1,12 @@
+---
+# Source: ld-relay/templates/config.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "ld-relay-config"
+  labels:
+    app.kubernetes.io/name: ld-relay
+    app.kubernetes.io/instance: ld-relay-test
+    app.kubernetes.io/version: "6.7.12"
+    app.kubernetes.io/managed-by: Helm
+data:
