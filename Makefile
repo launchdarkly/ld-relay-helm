@@ -24,4 +24,3 @@ lint: #! Run helm lint against this chart
 .PHONY: update-golden-files
 update-golden-files: #! Update unit test golden files (WARNING: Will change your local fs)
 	@go test ./test -update-golden=true
-  
