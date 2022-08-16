@@ -31,7 +31,7 @@ func (s *TemplateGoldenTest) TestContainerGoldenTestDefaults() {
 	bytes := regex.ReplaceAll([]byte(output), []byte(""))
 	output = string(bytes)
 
-	goldenFile := "golden/" + s.GoldenFileName + ".golden.yaml"
+	goldenFile := "golden/" + s.GoldenFileName + ".yaml"
 
 	if *update {
 		err := ioutil.WriteFile(goldenFile, bytes, 0644)
