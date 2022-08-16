@@ -104,9 +104,9 @@ Check out our [documentation](https://docs.launchdarkly.com) for in-depth instru
 
 ## Testing
 
-The unit tests start with a base set of comparison files. These are referred to as "golden files". These should
-represent an identical match to the installed chart if only the default values are used. Starting from this base point
-allows us to force additional unit tests only on the properties we expect to change.
+The unit tests start with a base set of comparison files referred to as "golden files". These should represent an
+identical match to the installed chart if only the default values are used. Starting from this base point allows us to
+force additional unit tests only on the properties we expect to change.
 
 Golden files can be updated by running `make update-golden-files`.
 Unit tests are run with `make test`.
