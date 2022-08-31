@@ -50,5 +50,4 @@ type TemplateTest struct {
 	ChartPath string
 	Release   string
 	Namespace string
-	Templates []string
 }

@@ -22,7 +22,7 @@ func (s *TemplateTest) TestCanControlContainerPorts() {
 		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
 	}
 
-	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, s.Templates)
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/deployment.yaml"})
 	var deployment appsv1.Deployment
 	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
 
@@ -45,11 +45,37 @@ func (s *TemplateTest) TestCanSetEnvironmentVariablesFromSecrets() {
 		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
 	}
 
-	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, s.Templates)
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/deployment.yaml"})
 	var deployment appsv1.Deployment
 	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
 
 	s.Require().Equal("LD_ENV_Production", deployment.Spec.Template.Spec.Containers[0].Env[0].Name)
 	s.Require().Equal("ld-relay", deployment.Spec.Template.Spec.Containers[0].Env[0].ValueFrom.SecretKeyRef.Key)
 	s.Require().Equal("sdk-key", deployment.Spec.Template.Spec.Containers[0].Env[0].ValueFrom.SecretKeyRef.Name)
+}
+
+func (s *TemplateTest) TestCanEnableOfflineMode() {
+	options := &helm.Options{
+		SetValues: map[string]string{
+			"relay.offline.enabled":                                "true",
+			"relay.offline.filename":                               "relay-file.tar.gz",
+			"relay.offline.volume.persistentVolumeClaim.claimName": "ld-relay-offline-pvc",
+		},
+		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
+	}
+
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/deployment.yaml"})
+	var deployment appsv1.Deployment
+	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
+
+	s.Require().Equal("ld-relay-config", deployment.Spec.Template.Spec.Volumes[0].Name)
+
+	s.Require().Equal("ld-relay-offline", deployment.Spec.Template.Spec.Volumes[1].Name)
+	s.Require().Equal("ld-relay-offline-pvc", deployment.Spec.Template.Spec.Volumes[1].PersistentVolumeClaim.ClaimName)
+
+	s.Require().Equal("ld-relay-offline", deployment.Spec.Template.Spec.Containers[0].VolumeMounts[0].Name)
+	s.Require().Equal("/offline/", deployment.Spec.Template.Spec.Containers[0].VolumeMounts[0].MountPath)
+
+	s.Require().Equal("FILE_DATA_SOURCE", deployment.Spec.Template.Spec.Containers[0].Env[0].Name)
+	s.Require().Equal("/offline/relay-file.tar.gz", deployment.Spec.Template.Spec.Containers[0].Env[0].Value)
 }

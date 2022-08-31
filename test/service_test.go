@@ -21,7 +21,7 @@ func (s *TemplateTest) TestServiceSupportsMultiplePorts() {
 		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
 	}
 
-	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, s.Templates)
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/service.yaml"})
 	var service corev1.Service
 	helm.UnmarshalK8SYaml(s.T(), output, &service)
 

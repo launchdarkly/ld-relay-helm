@@ -28,12 +28,26 @@ spec:
       - name: {{ include "ld-relay.name" . }}-config
         configMap:
           name: {{ include "ld-relay.name" . }}-config
+      {{- if .Values.relay.offline.enabled }}
+      - name: {{ include "ld-relay.name" . }}-offline
+        {{- toYaml .Values.relay.offline.volume | nindent 8 }}
+      {{- end }}
       serviceAccountName: {{ include "ld-relay.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
         - name: {{ .Chart.Name }}
+          {{- if .Values.relay.offline.enabled }}
+          volumeMounts:
+            - name: {{ include "ld-relay.name" . }}-offline
+              mountPath: /offline/
+          {{- end }}
           env:
+            {{- if .Values.relay.offline.enabled }}
+            - name: FILE_DATA_SOURCE
+              value: /offline/{{ .Values.relay.offline.filename }}
+            {{- end }}
+
             {{- range .Values.relay.secrets }}
               - name: {{ .envName }}
                 valueFrom:
