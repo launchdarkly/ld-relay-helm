@@ -118,7 +118,7 @@ relay:
   #
   # The filename should specify the path to the offline file, relative to the root of the provided volume.
   #
-  # Any time of volume supported by k8s should work in the volume setting.
+  # Any type of volume supported by k8s should work in the volume setting.
   # Refer to the https://kubernetes.io/docs/concepts/storage/volumes/
   # documentation for more information.
   offline:
