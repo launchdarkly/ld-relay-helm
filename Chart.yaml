@@ -8,7 +8,7 @@ keywords:
   - Feature Toggles
 sources:
   - https://github.com/launchdarkly/ld-relay
-icon: https://github.com/launchdarkly/ld-relay-helm/icon.png
+icon: https://github.com/launchdarkly/ld-relay-helm/raw/main/icon.png
 
 # A chart can be either an 'application' or a 'library' chart.
 #
