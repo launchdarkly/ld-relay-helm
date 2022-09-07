@@ -27,6 +27,7 @@ The relay proxy is controlled through environment variables. These can be set di
 | ----------------------------------------------- | ------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------ |
 | relay.environment                               | object  | `{}`                                                         | Define container environment variables to configure the relay instance         |
 | relay.secrets                                   | array   | `[]`                                                         | Define container environment variables populated from a k8s secret             |
+| relay.offline                                   | object  | `{enabled: false}`                                           | Optionally enable offline mode, mounting offline file from defined volume      |
 | replicaCount                                    | integer | `1`                                                          | Number of replicas of the relay pod                                            |
 | image.repository                                | string  | `launchdarkly/ld-relay`                                      | ld-relay image repository                                                      |
 | image.pullPolicy                                | string  | `IfNotPresent`                                               | ld-relay image pull policy                                                     |
@@ -76,7 +77,6 @@ relay:
 
 **Configuring using secrets**
 
-
 ```yaml
 relay:
   # Specify the relay environment variables here to load them into this chart's ConfigMap directly.
@@ -96,6 +96,22 @@ In the above example, both the SDK key and the password for the redis cluster ar
 
 ```shell
 kubectl create secret generic relay --from-literal=redis-password=your-password --from-literal=sdk-key=your-sdk-key
+```
+
+**Offline mode**
+
+[Offline mode](https://docs.launchdarkly.com/home/relay-proxy/offline) requires loading the offline file from a container volume. The `relay.offline.volume` value allows you to control which type of volume you wish to mount into the container. The below example shows how to use PersistentVolumes.
+
+> **NOTE** In this example, it is assumed you have already created the persistent volume and persistent volume claim.
+
+```yaml
+relay:
+   offline:
+     enabled: true
+     filename: relay-file.tar.gz
+     volume:
+       persistentVolumeClaim:
+         claimName: ld-relay-offline-volume-claim
 ```
 
 ## Learn more
