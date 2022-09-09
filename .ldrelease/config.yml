@@ -3,3 +3,6 @@ version: 2
 jobs:
   - docker:
       image: fedora:36
+
+documentation:
+  gitHubPages: true
