@@ -60,59 +60,10 @@ The relay proxy is controlled through environment variables. These can be set di
 
 ### Examples
 
-There are multiple ways to override the chart values shown above. For the purposes of these examples, we will show an override.yaml file which can be used like:
-
-```shell
-helm install --values ./override.yaml ld-relay launchdarkly-ld-relay/ld-relay
-```
-
-**Minimal example**
-
-```yaml
-# override.yaml
-relay:
-  environment:
-    LD_ENV_Production: your-sdk-key
-```
-
-**Configuring using secrets**
-
-```yaml
-relay:
-  # Specify the relay environment variables here to load them into this chart's ConfigMap directly.
-  environment:
-    USE_REDIS: true
-    REDIS_HOST: redis-master.default.svc.cluster.local
-  secrets:
-    - envName: LD_ENV_Production
-      secretName: relay
-      secretKey: sdk-key
-    - envName: REDIS_PASSWORD
-      secretName: relay
-      secretKey: redis-password
-```
-
-In the above example, both the SDK key and the password for the redis cluster are being pulled from pre-existing Kubernetes secrets. e.g.,
-
-```shell
-kubectl create secret generic relay --from-literal=redis-password=your-password --from-literal=sdk-key=your-sdk-key
-```
-
-**Offline mode**
-
-[Offline mode](https://docs.launchdarkly.com/home/relay-proxy/offline) requires loading the offline file from a container volume. The `relay.offline.volume` value allows you to control which type of volume you wish to mount into the container. The below example shows how to use PersistentVolumes.
-
-> **NOTE** In this example, it is assumed you have already created the persistent volume and persistent volume claim.
-
-```yaml
-relay:
-   offline:
-     enabled: true
-     filename: relay-file.tar.gz
-     volume:
-       persistentVolumeClaim:
-         claimName: ld-relay-offline-volume-claim
-```
+* [Basic configuration](./docs/examples/basic.md)
+* [Offline mode](./docs/examples/offline-mode.md)
+* [Automatic Configuration](./docs/examples/automatic-configuration.md)
+* [Full-featured example](./docs/examples/full-featured.md)
 
 ## Learn more
 
