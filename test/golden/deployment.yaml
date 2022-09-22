@@ -30,6 +30,7 @@ spec:
         {}
       containers:
         - name: ld-relay
+
           env:
           envFrom:
             - configMapRef:

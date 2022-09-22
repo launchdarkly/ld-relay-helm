@@ -19,51 +19,49 @@ This command will deploy the relay proxy to the Kubernetes cluster using the def
 
 ## Configuration options
 
-This chart can be customized by overriding the configuration options defined in [the values file](https://github.com/launchdarkly/ld-relay-helm/blob/main/values.yaml). You are encouraged to review this file as it contains detailed documentation. The list of value options are also summarized below.
+This chart can be customized by overriding the configuration options defined in [the values file](https://github.com/launchdarkly/ld-relay-helm/blob/main/values.yaml). You are encouraged to review this file as it contains detailed documentation.
 
-The relay proxy is controlled through environment variables. These can be set directly by specifying a name and value in the `relay.environment` option, or through a secret using the `relay.secrets` option. See the [relay proxy's guide on configuration](https://github.com/launchdarkly/ld-relay/blob/v6/docs/configuration.md#file-section-environment-name) for a list of valid environment variable names
+Our [getting started](./docs/getting-started.md) guide also provides more detail into configuring the relay proxy using this chart.
 
-| Key                                             | Type    | Default                                                      | Description                                                                    |
-| ----------------------------------------------- | ------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------ |
-| relay.environment                               | object  | `{}`                                                         | Define container environment variables to configure the relay instance         |
-| relay.secrets                                   | array   | `[]`                                                         | Define container environment variables populated from a k8s secret             |
-| relay.offline                                   | object  | `{enabled: false}`                                           | Optionally enable offline mode, mounting offline file from defined volume      |
-| replicaCount                                    | integer | `1`                                                          | Number of replicas of the relay pod                                            |
-| image.repository                                | string  | `launchdarkly/ld-relay`                                      | ld-relay image repository                                                      |
-| image.pullPolicy                                | string  | `IfNotPresent`                                               | ld-relay image pull policy                                                     |
-| image.tag                                       | string  | `""`                                                         | Overrides the image tag whose default is the chart appVersion.                 |
-| imagePullSecrets                                | array   | `[]`                                                         | Specify dockere registry secret names as an array                              |
-| nameOverride                                    | string  | `""`                                                         | Partially override the fullname template with a string (includes release name) |
-| fullnameOverride                                | string  | `""`                                                         | Fully override the fullname template with a string                             |
-| serviceAccount.create                           | bool    | `true`                                                       | Specifies whether a service account should be created                          |
-| serviceAccount.annotations                      | object  | `{}`                                                         | Annotations to add to the service account                                      |
-| serviceAccount.name                             | string  | `""`                                                         | The name of the service account to use.                                        |
-| podAnnotations                                  | object  | `{}`                                                         | Pod annotations                                                                |
-| podSecurityContext                              | object  | `{}`                                                         | Pod security context                                                           |
-| securityContext                                 | object  | `{}`                                                         | Container security context                                                     |
-| service.type                                    | string  | `ClusterIP`                                                  | Kubernetes service type                                                        |
-| service.ports                                   | array   | `[{port: 8030, targetPort: 8030, protocol: TCP, name: api}]` | Service port mapping. Must include one port named api.                         |
-| ingress.enabled                                 | bool    | `false`                                                      | Enable ingress controller                                                      |
-| ingress.className                               | string  | `""`                                                         | Ingress class name                                                             |
-| ingress.annotations                             | object  | `{}`                                                         | Ingress annotations                                                            |
-| ingress.hosts                                   | array   | `[]`                                                         | List of host rules                                                             |
-| ingress.tls                                     | array   | `[]`                                                         | Ingress TLS configuration                                                      |
-| resources                                       | object  | `{}`                                                         | Resource requirements for the relay container                                  |
-| autoscaling.enabled                             | bool    | `false`                                                      | Enable HorizontalPodAutoscaler                                                 |
-| autoscaling.minReplicas                         | integer | `1`                                                          | Set minimum number of running replicas                                         |
-| autoscaling.maxReplicas                         | integer | `100`                                                        | Set maximum number of running replicas                                         |
-| autoscaling.targetCPUUtilizationPercentage      | integer | `80`                                                         | Configure CPU as an average utilization metrics resource                       |
-| autoscaling.targetMemoryUtilizationPercentage   | integer | `80`                                                         | Configure memory as an average utilization metrics resource                    |
-| nodeSelector                                    | object  | `{}`                                                         | Selector to target node placement for the relay pod                            |
-| tolerations                                     | array   | `[]`                                                         | Specify pod tolerations                                                        |
-| affinity                                        | object  | `{}`                                                         | Specify pod affinity                                                           |
+Interested in more concrete examples or specific features? Check out the list of examples below. If you'd like to see a use case added to the documentation, please open an issue!
 
-### Examples
-
-* [Basic configuration](./docs/examples/basic.md)
 * [Offline mode](./docs/examples/offline-mode.md)
 * [Automatic Configuration](./docs/examples/automatic-configuration.md)
-* [Full-featured example](./docs/examples/full-featured.md)
+
+| Key                                           | Type    | Default                                                      | Description                                                                             |
+|-----------------------------------------------|---------|--------------------------------------------------------------|-----------------------------------------------------------------------------------------|
+| relay.environment                             | object  | `{}`                                                         | Define container environment variables to configure the relay instance                  |
+| relay.secrets                                 | array   | `[]`                                                         | Define container environment variables populated from a k8s secret                      |
+| relay.volume                                  | object  | `{}`                                                         | Optionally enable offline mode or reference an existing config file from defined volume |
+| replicaCount                                  | integer | `1`                                                          | Number of replicas of the relay pod                                                     |
+| image.repository                              | string  | `launchdarkly/ld-relay`                                      | ld-relay image repository                                                               |
+| image.pullPolicy                              | string  | `IfNotPresent`                                               | ld-relay image pull policy                                                              |
+| image.tag                                     | string  | `""`                                                         | Overrides the image tag whose default is the chart appVersion.                          |
+| imagePullSecrets                              | array   | `[]`                                                         | Specify dockere registry secret names as an array                                       |
+| nameOverride                                  | string  | `""`                                                         | Partially override the fullname template with a string (includes release name)          |
+| fullnameOverride                              | string  | `""`                                                         | Fully override the fullname template with a string                                      |
+| serviceAccount.create                         | bool    | `true`                                                       | Specifies whether a service account should be created                                   |
+| serviceAccount.annotations                    | object  | `{}`                                                         | Annotations to add to the service account                                               |
+| serviceAccount.name                           | string  | `""`                                                         | The name of the service account to use.                                                 |
+| podAnnotations                                | object  | `{}`                                                         | Pod annotations                                                                         |
+| podSecurityContext                            | object  | `{}`                                                         | Pod security context                                                                    |
+| securityContext                               | object  | `{}`                                                         | Container security context                                                              |
+| service.type                                  | string  | `ClusterIP`                                                  | Kubernetes service type                                                                 |
+| service.ports                                 | array   | `[{port: 8030, targetPort: 8030, protocol: TCP, name: api}]` | Service port mapping. Must include one port named api.                                  |
+| ingress.enabled                               | bool    | `false`                                                      | Enable ingress controller                                                               |
+| ingress.className                             | string  | `""`                                                         | Ingress class name                                                                      |
+| ingress.annotations                           | object  | `{}`                                                         | Ingress annotations                                                                     |
+| ingress.hosts                                 | array   | `[]`                                                         | List of host rules                                                                      |
+| ingress.tls                                   | array   | `[]`                                                         | Ingress TLS configuration                                                               |
+| resources                                     | object  | `{}`                                                         | Resource requirements for the relay container                                           |
+| autoscaling.enabled                           | bool    | `false`                                                      | Enable HorizontalPodAutoscaler                                                          |
+| autoscaling.minReplicas                       | integer | `1`                                                          | Set minimum number of running replicas                                                  |
+| autoscaling.maxReplicas                       | integer | `100`                                                        | Set maximum number of running replicas                                                  |
+| autoscaling.targetCPUUtilizationPercentage    | integer | `80`                                                         | Configure CPU as an average utilization metrics resource                                |
+| autoscaling.targetMemoryUtilizationPercentage | integer | `80`                                                         | Configure memory as an average utilization metrics resource                             |
+| nodeSelector                                  | object  | `{}`                                                         | Selector to target node placement for the relay pod                                     |
+| tolerations                                   | array   | `[]`                                                         | Specify pod tolerations                                                                 |
+| affinity                                      | object  | `{}`                                                         | Specify pod affinity                                                                    |
 
 ## Learn more
 
