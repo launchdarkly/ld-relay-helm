@@ -28,24 +28,29 @@ spec:
       - name: {{ include "ld-relay.name" . }}-config
         configMap:
           name: {{ include "ld-relay.name" . }}-config
-      {{- if .Values.relay.offline.enabled }}
-      - name: {{ include "ld-relay.name" . }}-offline
-        {{- toYaml .Values.relay.offline.volume | nindent 8 }}
+      {{- if .Values.relay.volume.definition }}
+      - name: {{ include "ld-relay.name" . }}-volume
+        {{- toYaml .Values.relay.volume.definition | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ include "ld-relay.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
         - name: {{ .Chart.Name }}
-          {{- if .Values.relay.offline.enabled }}
+          {{- if .Values.relay.volume.definition }}
           volumeMounts:
-            - name: {{ include "ld-relay.name" . }}-offline
-              mountPath: /offline/
+            - name: {{ include "ld-relay.name" . }}-volume
+              mountPath: /mnt/volume
           {{- end }}
+
+          {{- if .Values.relay.volume.config }}
+          command: ["/usr/bin/ldr", "--config", "/mnt/volume/{{ .Values.relay.volume.config }}", "--allow-missing-file", "--from-env"]
+          {{- end }}
+
           env:
-            {{- if .Values.relay.offline.enabled }}
+            {{- if .Values.relay.volume.offline }}
             - name: FILE_DATA_SOURCE
-              value: /offline/{{ .Values.relay.offline.filename }}
+              value: /mnt/volume/{{ .Values.relay.volume.offline }}
             {{- end }}
 
             {{- range .Values.relay.secrets }}

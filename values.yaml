@@ -58,7 +58,7 @@ ingress:
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
   hosts: []
-  # Exposing the relay allows for access outside of the cluster
+  # Exposing the relay allows for access outside the cluster
   #   - host: api.ld-relay.local
   #     paths:
   #       - path: /
@@ -114,16 +114,29 @@ relay:
     #   secretName: relay-proxy
     #   secretKey: redis-password
 
-  # Provides configuration options to control whether or not the relay should operate in offline mode.
+  # Enables mounting a k8s volume onto the relay container.
   #
-  # The filename should specify the path to the offline file, relative to the root of the provided volume.
-  #
-  # Any type of volume supported by k8s should work in the volume setting.
-  # Refer to the https://kubernetes.io/docs/concepts/storage/volumes/
-  # documentation for more information.
-  offline:
-    enabled: false
-    # filename: relay-file.tar.gz
-    # volume:
+  # This configuration option is used to optionally provide access to an
+  # existing relay proxy configuration file, or to provide access to an offline
+  # file.
+  volume:
+    # config should specify the path to the configuration file, relative to the
+    # root of the provided volume. If left blank, the relay will be configured
+    # ONLY using environment variables provided in the above two sections.
+    config: ~
+
+    # offline should specify the path to the offline file, relative to the root
+    # of the provided volume. If left blank, offline mode will be disabled.
+    # Setting this file will enable offline mode (by setting the FILE_DATA_SOURCE
+    # environment variable).
+    offline: ~
+
+    # Provide the volume definition required to access either the config or the
+    # offline files.
+    #
+    # Any type of volume supported by k8s should work in the volume setting.
+    # Refer to the https://kubernetes.io/docs/concepts/storage/volumes/
+    # documentation for more information.
+    definition: {}
     #   persistentVolumeClaim:
-    #     claimName: ld-relay-offline-pvc
+    #     claimName: ld-relay-pvc
