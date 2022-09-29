@@ -22,7 +22,9 @@
 *.tmproj
 .vscode/
 
+# Repo specific
 test
+docs
 go.mod
 go.sum
 Makefile
