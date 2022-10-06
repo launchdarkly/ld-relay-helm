@@ -67,20 +67,9 @@ Interested in more concrete examples or specific features? Check out the list of
 
 Check out our [documentation](https://docs.launchdarkly.com) for in-depth instructions on configuring and using LaunchDarkly. You can also head straight to the [complete reference guide for the relay proxy](https://docs.launchdarkly.com/home/relay-proxy).
 
-## Testing
-
-The unit tests start with a base set of comparison files referred to as "golden files". These should represent an
-identical match to the installed chart if only the default values are used. Starting from this base point allows us to
-force additional unit tests only on the properties we expect to change.
-
-Golden files can be updated by running `make update-golden-files`.
-Unit tests are run with `make test`.
-
-> **NOTE** The testing structure drew heavy inspiration from [this blog post](https://camunda.com/blog/2022/03/test/).
-
 ## Contributing
 
-We encourage pull requests and other contributions from the community.
+We encourage pull requests and other contributions from the community. Check out our [contributing guidelines](CONTRIBUTING.md) for instructions on how to contribute to this repository.
 
 ## About LaunchDarkly
 
