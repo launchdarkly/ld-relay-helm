@@ -54,12 +54,11 @@ func (s *TemplateTest) TestCanSetEnvironmentVariablesFromSecrets() {
 	s.Require().Equal("sdk-key", deployment.Spec.Template.Spec.Containers[0].Env[0].ValueFrom.SecretKeyRef.Name)
 }
 
-func (s *TemplateTest) TestCanEnableOfflineMode() {
+func (s *TemplateTest) TestCanLoadConfigFromVolume() {
 	options := &helm.Options{
 		SetValues: map[string]string{
-			"relay.offline.enabled":                                "true",
-			"relay.offline.filename":                               "relay-file.tar.gz",
-			"relay.offline.volume.persistentVolumeClaim.claimName": "ld-relay-offline-pvc",
+			"relay.volume.config": "my-new-config.config",
+			"relay.volume.definition.persistentVolumeClaim.claimName": "ld-relay-pvc",
 		},
 		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
 	}
@@ -70,12 +69,43 @@ func (s *TemplateTest) TestCanEnableOfflineMode() {
 
 	s.Require().Equal("ld-relay-config", deployment.Spec.Template.Spec.Volumes[0].Name)
 
-	s.Require().Equal("ld-relay-offline", deployment.Spec.Template.Spec.Volumes[1].Name)
-	s.Require().Equal("ld-relay-offline-pvc", deployment.Spec.Template.Spec.Volumes[1].PersistentVolumeClaim.ClaimName)
+	s.Require().Equal("ld-relay-volume", deployment.Spec.Template.Spec.Volumes[1].Name)
+	s.Require().Equal("ld-relay-pvc", deployment.Spec.Template.Spec.Volumes[1].PersistentVolumeClaim.ClaimName)
 
-	s.Require().Equal("ld-relay-offline", deployment.Spec.Template.Spec.Containers[0].VolumeMounts[0].Name)
-	s.Require().Equal("/offline/", deployment.Spec.Template.Spec.Containers[0].VolumeMounts[0].MountPath)
+	s.Require().Equal("ld-relay-volume", deployment.Spec.Template.Spec.Containers[0].VolumeMounts[0].Name)
+	s.Require().Equal("/mnt/volume", deployment.Spec.Template.Spec.Containers[0].VolumeMounts[0].MountPath)
+
+	expectedCommand := []string{
+		"/usr/bin/ldr",
+		"--config",
+		"/mnt/volume/my-new-config.config",
+		"--allow-missing-file",
+		"--from-env",
+	}
+	s.Require().Equal(expectedCommand, deployment.Spec.Template.Spec.Containers[0].Command)
+}
+
+func (s *TemplateTest) TestCanEnableOfflineMode() {
+	options := &helm.Options{
+		SetValues: map[string]string{
+			"relay.volume.offline": "relay-file.tar.gz",
+			"relay.volume.definition.persistentVolumeClaim.claimName": "ld-relay-pvc",
+		},
+		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
+	}
+
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/deployment.yaml"})
+	var deployment appsv1.Deployment
+	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
+
+	s.Require().Equal("ld-relay-config", deployment.Spec.Template.Spec.Volumes[0].Name)
+
+	s.Require().Equal("ld-relay-volume", deployment.Spec.Template.Spec.Volumes[1].Name)
+	s.Require().Equal("ld-relay-pvc", deployment.Spec.Template.Spec.Volumes[1].PersistentVolumeClaim.ClaimName)
+
+	s.Require().Equal("ld-relay-volume", deployment.Spec.Template.Spec.Containers[0].VolumeMounts[0].Name)
+	s.Require().Equal("/mnt/volume", deployment.Spec.Template.Spec.Containers[0].VolumeMounts[0].MountPath)
 
 	s.Require().Equal("FILE_DATA_SOURCE", deployment.Spec.Template.Spec.Containers[0].Env[0].Name)
-	s.Require().Equal("/offline/relay-file.tar.gz", deployment.Spec.Template.Spec.Containers[0].Env[0].Value)
+	s.Require().Equal("/mnt/volume/relay-file.tar.gz", deployment.Spec.Template.Spec.Containers[0].Env[0].Value)
 }
