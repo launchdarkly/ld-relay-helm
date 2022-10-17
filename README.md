@@ -19,13 +19,14 @@ To learn more, read the [Getting started](./docs/getting-started.md) guide. For 
 
 ## Installation
 
-To deploy the Relay Proxy to the Kubernetes cluster using the default configuration:
+The default configuration is insufficient to have a working instance of the Relay Proxy running. You must minimally provide an environment for the Relay Proxy to connect to, using your LaunchDarkly SDK key for that environment.
+
+To deploy the Relay Proxy to the Kubernetes cluster using the default configuration and an environment:
 
 ```shell
 helm repo add launchdarkly-ld-relay https://launchdarkly.github.io/ld-relay-helm
 helm install ld-relay --set relay.environment.LD_ENV_YourEnvironment=your-sdk-key launchdarkly-ld-relay/ld-relay
 ```
-The default configuration is insufficient to have a working instance of the Relay Proxy running. You must minimally provide an environment for the Relay Proxy to connect to, using your LaunchDarkly SDK key for that environment.
 
 For additional configuration, use the [Configuration options](#configuration-options) below.
 
