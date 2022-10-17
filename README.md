@@ -1,6 +1,13 @@
 # LaunchDarkly Relay Proxy Helm Chart
 
-A helm chart to ease deployment of the [LaunchDarkly Relay Proxy](https://github.com/launchdarkly/ld-relay) to Kubernetes.
+A Helm chart to ease deployment of the [LaunchDarkly Relay Proxy](https://github.com/launchdarkly/ld-relay) to Kubernetes (k8s).
+
+Basic [installation](#installation) and [configuration](#configuration-options) information is below.
+
+To learn more, read the [Getting started](./docs/getting-started.md) guide. For additional examples, read:
+
+* [Offline mode](./docs/examples/offline-mode.md)
+* [Automatic configuration](./docs/examples/automatic-configuration.md)
 
 ## LaunchDarkly overview
 
@@ -10,62 +17,61 @@ A helm chart to ease deployment of the [LaunchDarkly Relay Proxy](https://github
 
 ## Installation
 
+To deploy the Relay Proxy to the Kubernetes cluster using the default configuration:
+
 ```shell
 helm repo add launchdarkly-ld-relay https://launchdarkly.github.io/ld-relay-helm
-helm install ld-relay launchdarkly-ld-relay/ld-relay
+helm install ld-relay --set relay.environment.LD_ENV_YourEnvironment=your-sdk-key launchdarkly-ld-relay/ld-relay
 ```
+The default configuration is insufficient to have a working instance of the Relay Proxy running. You must minimally provide an environment for the Relay Proxy to connect to, using your LaunchDarkly SDK key for that environment.
 
-This command will deploy the relay proxy to the Kubernetes cluster using the default configuration. The default configuration is insufficient to have a working instance of the proxy running. You must minimally provide an environment for the proxy to connect to. See the configuration section below.
+For additional configuration, use the [Configuration options](#configuration-options) below.
 
 ## Configuration options
 
-This chart can be customized by overriding the configuration options defined in [the values file](https://github.com/launchdarkly/ld-relay-helm/blob/main/values.yaml). You are encouraged to review this file as it contains detailed documentation.
+To customize this Helm chart, override the configuration options defined in the [values file](https://github.com/launchdarkly/ld-relay-helm/blob/main/values.yaml). The values file contains detailed documentation on each option.
 
-Our [getting started](./docs/getting-started.md) guide also provides more detail into configuring the relay proxy using this chart.
+Here's a summary of the available configuration options:
 
-Interested in more concrete examples or specific features? Check out the list of examples below. If you'd like to see a use case added to the documentation, please open an issue!
-
-* [Offline mode](./docs/examples/offline-mode.md)
-* [Automatic Configuration](./docs/examples/automatic-configuration.md)
 
 | Key                                           | Type    | Default                                                      | Description                                                                             |
 |-----------------------------------------------|---------|--------------------------------------------------------------|-----------------------------------------------------------------------------------------|
-| relay.environment                             | object  | `{}`                                                         | Define container environment variables to configure the relay instance                  |
-| relay.secrets                                 | array   | `[]`                                                         | Define container environment variables populated from a k8s secret                      |
-| relay.volume                                  | object  | `{}`                                                         | Optionally enable offline mode or reference an existing config file from defined volume |
+| relay.environment                             | object  | `{}`                                                         | Defines container environment variables to configure the Relay Proxy instance                  |
+| relay.secrets                                 | array   | `[]`                                                         | Defines container environment variables populated from a Kubernetes secret                      |
+| relay.volume                                  | object  | `{}`                                                         | Enables offline mode or references an existing config file from a defined volume |
 | replicaCount                                  | integer | `1`                                                          | Number of replicas of the relay pod                                                     |
 | image.repository                              | string  | `launchdarkly/ld-relay`                                      | ld-relay image repository                                                               |
 | image.pullPolicy                              | string  | `IfNotPresent`                                               | ld-relay image pull policy                                                              |
-| image.tag                                     | string  | `""`                                                         | Overrides the image tag whose default is the chart appVersion.                          |
-| imagePullSecrets                              | array   | `[]`                                                         | Specify docker registry secret names as an array                                        |
-| nameOverride                                  | string  | `""`                                                         | Partially override the fullname template with a string (includes release name)          |
-| fullnameOverride                              | string  | `""`                                                         | Fully override the fullname template with a string                                      |
+| image.tag                                     | string  | `""`                                                         | Overrides the image tag whose default is the chart appVersion                          |
+| imagePullSecrets                              | array   | `[]`                                                         | Specifies docker registry secret names as an array                                        |
+| nameOverride                                  | string  | `""`                                                         | Partially overrides the fullname template with a string (includes release name)          |
+| fullnameOverride                              | string  | `""`                                                         | Fully overrides the fullname template with a string                                      |
 | serviceAccount.create                         | bool    | `true`                                                       | Specifies whether a service account should be created                                   |
 | serviceAccount.annotations                    | object  | `{}`                                                         | Annotations to add to the service account                                               |
-| serviceAccount.name                           | string  | `""`                                                         | The name of the service account to use.                                                 |
+| serviceAccount.name                           | string  | `""`                                                         | The name of the service account                                                |
 | podAnnotations                                | object  | `{}`                                                         | Pod annotations                                                                         |
 | podSecurityContext                            | object  | `{}`                                                         | Pod security context                                                                    |
 | securityContext                               | object  | `{}`                                                         | Container security context                                                              |
 | service.type                                  | string  | `ClusterIP`                                                  | Kubernetes service type                                                                 |
-| service.ports                                 | array   | `[{port: 8030, targetPort: 8030, protocol: TCP, name: api}]` | Service port mapping. Must include one port named api.                                  |
-| ingress.enabled                               | bool    | `false`                                                      | Enable ingress controller                                                               |
+| service.ports                                 | array   | `[{port: 8030, targetPort: 8030, protocol: TCP, name: api}]` | Service port mapping. Must include one port named `api`.                                  |
+| ingress.enabled                               | bool    | `false`                                                      | Enables ingress controller                                                               |
 | ingress.className                             | string  | `""`                                                         | Ingress class name                                                                      |
 | ingress.annotations                           | object  | `{}`                                                         | Ingress annotations                                                                     |
 | ingress.hosts                                 | array   | `[]`                                                         | List of host rules                                                                      |
 | ingress.tls                                   | array   | `[]`                                                         | Ingress TLS configuration                                                               |
 | resources                                     | object  | `{}`                                                         | Resource requirements for the relay container                                           |
-| autoscaling.enabled                           | bool    | `false`                                                      | Enable HorizontalPodAutoscaler                                                          |
-| autoscaling.minReplicas                       | integer | `1`                                                          | Set minimum number of running replicas                                                  |
-| autoscaling.maxReplicas                       | integer | `100`                                                        | Set maximum number of running replicas                                                  |
-| autoscaling.targetCPUUtilizationPercentage    | integer | `80`                                                         | Configure CPU as an average utilization metrics resource                                |
-| autoscaling.targetMemoryUtilizationPercentage | integer | `80`                                                         | Configure memory as an average utilization metrics resource                             |
+| autoscaling.enabled                           | bool    | `false`                                                      | Enables HorizontalPodAutoscaler                                                          |
+| autoscaling.minReplicas                       | integer | `1`                                                          | Sets minimum number of running replicas                                                  |
+| autoscaling.maxReplicas                       | integer | `100`                                                        | Sets maximum number of running replicas                                                  |
+| autoscaling.targetCPUUtilizationPercentage    | integer | `80`                                                         | Configures CPU as an average utilization metrics resource                                |
+| autoscaling.targetMemoryUtilizationPercentage | integer | `80`                                                         | Configures memory as an average utilization metrics resource                             |
 | nodeSelector                                  | object  | `{}`                                                         | Selector to target node placement for the relay pod                                     |
 | tolerations                                   | array   | `[]`                                                         | Specify pod tolerations                                                                 |
 | affinity                                      | object  | `{}`                                                         | Specify pod affinity                                                                    |
 
 ## Learn more
 
-Check out our [documentation](https://docs.launchdarkly.com) for in-depth instructions on configuring and using LaunchDarkly. You can also head straight to the [complete reference guide for the relay proxy](https://docs.launchdarkly.com/home/relay-proxy).
+Read our [documentation](https://docs.launchdarkly.com) for in-depth instructions on configuring and using LaunchDarkly. To learn more about the Relay Proxy specifically, read the [complete reference guide for the Relay Proxy](https://docs.launchdarkly.com/home/relay-proxy).
 
 ## Contributing
 
