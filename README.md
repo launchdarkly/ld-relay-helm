@@ -1,5 +1,7 @@
 # LaunchDarkly Relay Proxy Helm Chart
 
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/launchdarkly/ld-relay-helm/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/launchdarkly/ld-relay-helm/tree/main)
+
 A Helm chart to ease deployment of the [LaunchDarkly Relay Proxy](https://github.com/launchdarkly/ld-relay) to Kubernetes (k8s).
 
 Basic [installation](#installation) and [configuration](#configuration-options) information is below.
