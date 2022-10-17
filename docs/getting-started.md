@@ -26,7 +26,7 @@ relay:
   environment:
     LD_ENV_YourEnvironment: your-sdk-key
 ```
-Any name/value pair defined here will be set into the Relay container. To learn more, read the [Relay Proxy configuration guide][proxy-config] for additional details.
+Any name/value pair defined here will be set into the Relay container. To learn more, read the [Relay Proxy configuration guide][proxy-config].
 
 Setting environment variables directly in the file is convenient, but not always ideal. If you are tracking `values.yaml` in source control, you may not wish to store your SDK key in plaintext.
 
@@ -53,7 +53,7 @@ relay:
       secretKey: sdk-key
 ```
 
-You can use both plaintext variables and secrets together to control the Relay Proxy. Here's an example:
+You can use both plaintext variables and Secrets together to control the Relay Proxy. Here's an example:
 
 ```yaml
 # values.yaml
