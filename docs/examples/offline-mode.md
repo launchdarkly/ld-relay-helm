@@ -1,13 +1,15 @@
 # Offline mode
 
-> **NOTE** Relay Proxy offline mode is an Enterprise feature
+> **Relay Proxy offline mode is an Enterprise feature**. To learn more, read [Offline mode][offline].
 
-Enabling [offline mode][offline] on the Relay Proxy lets you run the Relay Proxy without ever connecting it to LaunchDarkly. Instead of retrieving flag and segment values from LaunchDarkly's servers, the Relay Proxy gets them from files located on your local host or filesystem. To learn more about Offline mode in the Relay Proxy, [read here][offline].
+Enabling offline mode on the Relay Proxy lets you run the Relay Proxy without ever connecting it to LaunchDarkly. Instead of retrieving flag and segment values from LaunchDarkly's servers, the Relay Proxy gets them from files located on your local host or filesystem.
 
-When using this helm chart, the offline file will need to exist in a Kubernetes volume which will be mounted to the Relay Proxy container. Our example below makes use of [minikube] and a [local volume mount][local-volume].
+When using this Helm chart, the offline file needs to exist in a Kubernetes volume which is mounted to the Relay Proxy container. The example below uses [minikube] and a [local volume mount][local-volume].
 
-1. Create a Relay Proxy configuration from the [Relay proxy tab][proxy-tab] of the Account settings page and save its unique key.
-2. A local volume requires a file on the minikube host. We connect to minikube and download a local copy of the flag and segment data using the key from the previous step.
+Here's how to enable offline mode when using the Helm chart:
+
+1. Create a Relay Proxy configuration from the [Relay proxy tab][proxy-tab] of the Account settings page in the LaunchDarkly user interface, and save its unique key.
+2. A local volume requires a file on the minikube host. Connect to minikube and download a local copy of the flag and segment data using the key from the previous step.
 
     ```shell
     $ minikube ssh
@@ -18,7 +20,7 @@ When using this helm chart, the offline file will need to exist in a Kubernetes 
       -o EXAMPLE-NAME-OF-OUTPUTTED-FILE.tar.gz
     ```
 
-3. Next, we create a volume and associated volume claim. This allows access to this file within the cluster.
+3. Create a volume and associated volume claim. This allows access to this file within the cluster.
 
     ```yaml
     # offline-volume.yaml
@@ -56,7 +58,7 @@ When using this helm chart, the offline file will need to exist in a Kubernetes 
     kubectl apply -f offline-claim.yaml
     ```
 
-4. Now that we have a volume accessible file, we can configure `values.yaml` to reference this volume claim.
+4. Now that you have a volume accessible file, configure `values.yaml` to reference this volume claim.
 
     ```yaml
     # values.yaml
@@ -70,11 +72,13 @@ When using this helm chart, the offline file will need to exist in a Kubernetes 
             claimName: offline-volume-claim
     ```
 
+5. Install the Helm chart, referencing your updated values configuration file.
+
     ```shell
     helm install relay --values ./values.yaml launchdarkly-ld-relay/ld-relay
     ```
 
-Success! At this point, you should have a working installation of the relay proxy, initially configured directly from your pre-downloaded offline file.
+Success! Now you should have a working installation of the Relay Proxy, initially configured directly from your pre-downloaded offline file.
 
 [minikube]: https://minikube.sigs.k8s.io/docs/start/
 [offline]: https://docs.launchdarkly.com/home/relay-proxy/offline
