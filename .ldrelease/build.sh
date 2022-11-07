@@ -19,5 +19,5 @@ cp ld-relay-"$LD_RELEASE_VERSION".tgz "$LD_RELEASE_ARTIFACTS_DIR"
 
 # We can place the .tgz and updated index.yaml files into the release docs
 # directory, and releaser will handle updating the gh-pages branch for us.
-cp ld-relay-"$LD_RELEASE_VERSION".tgz "$LD_RELEASE_DOCS_DIR"
-cp index.yaml "$LD_RELEASE_DOCS_DIR"
+mv ld-relay-"$LD_RELEASE_VERSION".tgz "$LD_RELEASE_DOCS_DIR"
+mv index.yaml "$LD_RELEASE_DOCS_DIR"
