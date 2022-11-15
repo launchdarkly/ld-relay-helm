@@ -3,7 +3,7 @@ help: #! Show this help message
 	@echo 'Usage: make [target] ... '
 	@echo ''
 	@echo 'Targets:'
-	@fgrep -h '#!' $(MAKEFILE_LIST) | fgrep -v fgrep | sed -s 's/:.*#!/:/' | column -t -s":"
+	@grep -h -F '#!' $(MAKEFILE_LIST) | grep -v grep | sed 's/:.*#!/:/' | column -t -s":"
 
 .PHONY: prepare
 prepare: #! Setup the project for development

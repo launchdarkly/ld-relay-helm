@@ -40,7 +40,7 @@ Here's a summary of the available configuration options:
 | Key                                           | Type    | Default                                                      | Description                                                                      |
 |-----------------------------------------------|---------|--------------------------------------------------------------|----------------------------------------------------------------------------------|
 | relay.environment                             | object  | `{}`                                                         | Defines container environment variables to configure the Relay Proxy instance    |
-| relay.secrets                                 | array   | `[]`                                                         | Defines container environment variables populated from a Kubernetes secret       |
+| relay.secrets                                 | array   | `[]`                                                         | Defines container environment variables or volumes populated from k8s secrets    |
 | relay.volume                                  | object  | `{}`                                                         | Enables offline mode or references an existing config file from a defined volume |
 | replicaCount                                  | integer | `1`                                                          | Number of replicas of the relay pod                                              |
 | image.repository                              | string  | `launchdarkly/ld-relay`                                      | ld-relay image repository                                                        |

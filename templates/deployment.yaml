@@ -29,19 +29,42 @@ spec:
       - name: {{ include "ld-relay.name" . }}-config
         configMap:
           name: {{ include "ld-relay.name" . }}-config
+      {{ $has_volumes := false }}
       {{- if .Values.relay.volume.definition }}
+        {{ $has_volumes = true }}
       - name: {{ include "ld-relay.name" . }}-volume
         {{- toYaml .Values.relay.volume.definition | nindent 8 }}
       {{- end }}
+      {{- range .Values.relay.secrets }}
+          {{- if .volumePath }}
+            {{ $has_volumes = true }}
+      - name: {{ .volumeName }}
+        secret:
+          secretName: {{ .secretName }}
+          items:
+            - key: {{ .secretKey }}
+              path:  {{ .volumePath }}
+          {{- end }}
+      {{- end }}
+
       serviceAccountName: {{ include "ld-relay.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
         - name: {{ .Chart.Name }}
-          {{- if .Values.relay.volume.definition }}
+          {{- if $has_volumes }}
           volumeMounts:
+            {{- if .Values.relay.volume.definition }}
             - name: {{ include "ld-relay.name" . }}-volume
               mountPath: /mnt/volume
+            {{- end }}
+            {{- range .Values.relay.secrets }}
+              {{- if .volumePath }}
+            - name: {{ .volumeName }}
+              mountPath: /mnt/secrets/
+              readOnly: true
+              {{- end }}
+            {{- end }}
           {{- end }}
 
           {{- if .Values.relay.volume.config }}
@@ -55,11 +78,13 @@ spec:
             {{- end }}
 
             {{- range .Values.relay.secrets }}
-              - name: {{ .envName }}
-                valueFrom:
-                    secretKeyRef:
-                      key: {{ .secretKey }}
-                      name: {{ .secretName }}
+              {{- if .envName }}
+            - name: {{ .envName }}
+              valueFrom:
+                  secretKeyRef:
+                    key: {{ .secretKey }}
+                    name: {{ .secretName }}
+              {{- end }}
             {{- end }}
           envFrom:
             - configMapRef:

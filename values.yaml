@@ -109,10 +109,18 @@ relay:
     # LD_ENV_MyEnvironment: your-sdk-key
     # USE_REDIS: true
 
-  # Set environment variables in the relay container with values pulled from k8s secrets
-  # These environment variables should match the ones documented by the relay proxy at https://github.com/launchdarkly/ld-relay
+  # Use k8s secrets to either set environment variables or to mount secrets as files in the relay container.
   secrets: []
+    # Set environment variables in the relay container with values pulled from k8s secrets by specifying the envName property.
+    # These environment variables should match the ones documented by the relay proxy at https://github.com/launchdarkly/ld-relay
     # - envName: REDIS_PASSWORD
+    #   secretName: relay-proxy
+    #   secretKey: redis-password
+    #
+    # Setting the volumePath and volumeName values will mount the specified secret as a file into the container.
+    # All file paths are stored under /mnt/secrets
+    # - volumePath: path
+    #   volumeName: name
     #   secretName: relay-proxy
     #   secretKey: redis-password
 
