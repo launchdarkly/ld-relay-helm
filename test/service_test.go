@@ -37,3 +37,20 @@ func (s *TemplateTest) TestServiceSupportsMultiplePorts() {
 	s.Require().Equal(corev1.Protocol("TCP"), service.Spec.Ports[1].Protocol)
 	s.Require().Equal("prometheus", service.Spec.Ports[1].Name)
 }
+
+func (s *TemplateTest) TestServiceSupportsAnnotations() {
+	options := &helm.Options{
+		SetValues: map[string]string{
+			"service.annotations.service\\.beta\\.kubernetes\\.io/aws-load-balancer-internal": "\"true\"",
+		},
+		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
+	}
+
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/service.yaml"})
+	var service corev1.Service
+	helm.UnmarshalK8SYaml(s.T(), output, &service)
+
+	s.Require().Equal(1, len(service.Annotations))
+
+	s.Require().Equal(service.Annotations["service.beta.kubernetes.io/aws-load-balancer-internal"], "\"true\"")
+}

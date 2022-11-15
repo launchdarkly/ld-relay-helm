@@ -56,6 +56,7 @@ Here's a summary of the available configuration options:
 | podSecurityContext                            | object  | `{}`                                                         | Pod security context                                                             |
 | securityContext                               | object  | `{}`                                                         | Container security context                                                       |
 | service.type                                  | string  | `ClusterIP`                                                  | Kubernetes service type                                                          |
+| service.annotations                           | object  | `{}`                                                         | Annotations to add to the service                                                |
 | service.ports                                 | array   | `[{port: 8030, targetPort: 8030, protocol: TCP, name: api}]` | Service port mapping. Must include one port named `api`.                         |
 | ingress.enabled                               | bool    | `false`                                                      | Enables ingress controller                                                       |
 | ingress.className                             | string  | `""`                                                         | Ingress class name                                                               |

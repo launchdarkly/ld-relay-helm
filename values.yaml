@@ -39,6 +39,8 @@ securityContext: {}
 
 service:
   type: ClusterIP
+  annotations: {}
+    # service.beta.kubernetes.io/aws-load-balancer-internal: "true"
   ports:
     # WARN: Do not modify the name of this port mapping. It is referenced by other parts of this configuration
     - port: 8030
