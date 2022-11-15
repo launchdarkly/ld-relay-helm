@@ -18,7 +18,6 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 3923f8a7c823f36ae07962553a86da04cb32f180dc16a8f53c9efbc9a3e5e532
       labels:
         app.kubernetes.io/name: ld-relay
         app.kubernetes.io/instance: ld-relay-test

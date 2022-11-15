@@ -29,6 +29,10 @@ func (s *TemplateGoldenTest) TestContainerGoldenTestDefaults() {
 	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, s.Templates)
 	regex := regexp.MustCompile(`\s+helm.sh/chart:\s+.*`)
 	bytes := regex.ReplaceAll([]byte(output), []byte(""))
+
+	regex = regexp.MustCompile(`\s+checksum/config:\s+.*`)
+	bytes = regex.ReplaceAll(bytes, []byte(""))
+
 	output = string(bytes)
 
 	goldenFile := "golden/" + s.GoldenFileName + ".yaml"
