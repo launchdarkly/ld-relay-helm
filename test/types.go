@@ -2,11 +2,12 @@ package test
 
 import (
 	"flag"
+	"io/ioutil"
+	"regexp"
+
 	"github.com/gruntwork-io/terratest/modules/helm"
 	"github.com/gruntwork-io/terratest/modules/k8s"
 	"github.com/stretchr/testify/suite"
-	"io/ioutil"
-	"regexp"
 )
 
 var update = flag.Bool("update-golden", false, "update golden test output files")

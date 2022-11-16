@@ -26,6 +26,8 @@ spec:
       - name: ld-relay-config
         configMap:
           name: ld-relay-config
+      
+
       serviceAccountName: ld-relay-test
       securityContext:
         {}

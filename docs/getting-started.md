@@ -42,7 +42,7 @@ You must create a Secret independently of the Helm chart installation. To store 
 kubectl create secret generic relay --from-literal=sdk-key=your-sdk-key
 ```
 
-Then, you can reference this secret name and key in your `values.yaml` file:
+You can reference this secret name and key in your `values.yaml` file to set an environment variable within the Relay Proxy container:
 
 ```yaml
 # values.yaml
@@ -64,6 +64,18 @@ relay:
     - envName: LD_ENV_YourEnvironment
       secretName: relay
       secretKey: sdk-key
+```
+
+Alternatively, secrets can be mounted directly into the Relay Proxy. Secrets are mounted under `/mnt/secrets`.
+
+```yaml
+# values.yaml
+relay:
+   secrets:
+      - volumeName: tls-cert
+        volumePath: my/cert/path.cert # This will be accessible at /mnt/secrets/my/cert/path.cert
+        secretName: relay
+        secretKey: cert
 ```
 
 ## Configuration file
