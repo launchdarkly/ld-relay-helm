@@ -3,6 +3,24 @@ entries:
   ld-relay:
   - apiVersion: v2
     appVersion: 6.7.12
+    created: "2022-11-16T16:54:46.623215016Z"
+    description: LaunchDarkly Relay Proxy
+    digest: 8c886e933e00176048cefb6edd689ff902569ec09985305e635f16d670cc0bc9
+    icon: https://github.com/launchdarkly/ld-relay-helm/raw/main/icon.png
+    keywords:
+    - LaunchDarkly
+    - LaunchDarkly Relay
+    - Feature Flags
+    - Feature Toggles
+    name: ld-relay
+    sources:
+    - https://github.com/launchdarkly/ld-relay
+    type: application
+    urls:
+    - https://launchdarkly.github.io/ld-relay-helm/ld-relay-1.1.0.tgz
+    version: 1.1.0
+  - apiVersion: v2
+    appVersion: 6.7.12
     created: "2022-11-07T19:17:28.877354965Z"
     description: LaunchDarkly Relay Proxy
     digest: 76271f1098f7b8b793ddfc2a1c161c1a22eed7a3064fcc37d4b29bcb321402cd
@@ -37,4 +55,4 @@ entries:
     urls:
     - https://launchdarkly.github.io/ld-relay-helm/ld-relay-1.0.0.tgz
     version: 1.0.0
-generated: "2022-11-07T19:17:28.874094435Z"
+generated: "2022-11-16T16:54:46.621575974Z"
