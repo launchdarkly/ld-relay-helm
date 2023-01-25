@@ -4,6 +4,10 @@ Change log
 All notable changes to the LaunchDarkly Relay Proxy Helm Chart will be documented in this file. This project adheres to [Semantic Versioning](https://semver.org).
 
 
+## [1.2.0] - 2023-01-25
+### Changed:
+- Updated HorizontalPodAutoscaler to be compatible with older versions of Kubernetes. (Thanks, [guifl](https://github.com/launchdarkly/ld-relay-helm/pull/21)!)
+
 ## [1.1.0] - 2022-11-16
 ### Added:
 - Allow setting annotations on the created service.
