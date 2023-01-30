@@ -17,7 +17,9 @@ helm repo index . --url https://launchdarkly.github.io/ld-relay-helm --merge "$G
 
 cp ld-relay-"$LD_RELEASE_VERSION".tgz "$LD_RELEASE_ARTIFACTS_DIR"
 
-# We can place the .tgz and updated index.yaml files into the release docs
-# directory, and releaser will handle updating the gh-pages branch for us.
+# We can place the new .tgz, all existing .tgz files, and the updated
+# index.yaml files into the release docs directory, and releaser will handle
+# updating the gh-pages branch for us.
 mv ld-relay-"$LD_RELEASE_VERSION".tgz "$LD_RELEASE_DOCS_DIR"
 mv index.yaml "$LD_RELEASE_DOCS_DIR"
+mv "$GH_PAGES_DIR"/*.tgz "$LD_RELEASE_DOCS_DIR"
