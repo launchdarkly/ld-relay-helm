@@ -1,3 +1,9 @@
+> **Warning**
+>
+> By default, 1.x releases of the Helm Chart install the 6.x version of the Relay Proxy. This version is NOT compatible with [LaunchDarkly Contexts](https://docs.launchdarkly.com/guides/flags/intro-contexts).
+>
+> Consider upgrading to a later version of this Helm Chart to receive context support by default.
+
 # LaunchDarkly Relay Proxy Helm Chart
 
 [![CircleCI](https://dl.circleci.com/status-badge/img/gh/launchdarkly/ld-relay-helm/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/launchdarkly/ld-relay-helm/tree/main)

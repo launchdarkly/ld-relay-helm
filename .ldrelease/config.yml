@@ -4,5 +4,9 @@ jobs:
   - docker:
       image: fedora:36
 
+branches:
+  - name: main
+  - name: 1.x
+
 documentation:
   gitHubPages: true
