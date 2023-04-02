@@ -53,6 +53,7 @@ Here's a summary of the available configuration options:
 | serviceAccount.annotations                    | object  | `{}`                                                         | Annotations to add to the service account                                        |
 | serviceAccount.name                           | string  | `""`                                                         | The name of the service account                                                  |
 | podAnnotations                                | object  | `{}`                                                         | Pod annotations                                                                  |
+| podLabels                                     | object  | `{}`                                                         | Additional pod labels                                                            |
 | podSecurityContext                            | object  | `{}`                                                         | Pod security context                                                             |
 | securityContext                               | object  | `{}`                                                         | Container security context                                                       |
 | service.type                                  | string  | `ClusterIP`                                                  | Kubernetes service type                                                          |
