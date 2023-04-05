@@ -24,11 +24,19 @@ serviceAccount:
   # If not set and create is true, a name is generated using the fullname template
   name: ""
 
+pod:
+  # Annotations to add to the pod. If provided, will take precedence over podAnnotations
+  annotations: {}
+  # Labels to add to the pod.
+  labels: {}
+  # Security context applied to the pod. If provided, will take precedence over podSecurityContext
+  securityContext: {}
+    # fsGroup: 2000
+
+# Deprecated: Use pod.annotations instead
 podAnnotations: {}
 
-# Additional labels added to the pod
-podLabels: {}
-
+# Deprecated: Use pod.securityContext instead
 podSecurityContext: {}
   # fsGroup: 2000
 
