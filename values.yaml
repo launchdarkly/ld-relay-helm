@@ -135,6 +135,13 @@ relay:
     #   secretName: relay-proxy
     #   secretKey: redis-password
 
+  # Specify the relay environment variables here.
+  envVars: []
+    # - name: RUNNING_HOST
+    #   valueFrom:
+    #     fieldRef:
+    #       fieldPath: status.hostIP
+
   # Enables mounting a k8s volume onto the relay container.
   #
   # This configuration option is used to optionally provide access to an
