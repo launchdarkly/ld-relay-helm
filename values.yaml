@@ -120,6 +120,18 @@ relay:
     # LD_ENV_MyEnvironment: your-sdk-key
     # USE_REDIS: true
 
+  # Because the `relay.environment` configuration is loaded into a ConfigMap, values must be simple string key/value
+  # pairs. It does not support more complex variable querying such as `valueFrom.fieldRef.fieldPath`.
+  #
+  # `relay.environmentVariables` allows providing these more complex `valueFrom` style variable configurations. Standard
+  # name/value environment variable configuration is also supported, though not necessary as it is somewhat redundant
+  # with `relay.environment`.
+  environmentVariables: []
+    # - name: RUNNING_HOST
+    #   valueFrom:
+    #     fieldRef:
+    #       fieldPath: status.hostIP
+
   # Use k8s secrets to either set environment variables or to mount secrets as files in the relay container.
   secrets: []
     # Set environment variables in the relay container with values pulled from k8s secrets by specifying the envName property.
@@ -134,13 +146,6 @@ relay:
     #   volumeName: name
     #   secretName: relay-proxy
     #   secretKey: redis-password
-
-  # Specify the relay environment variables here.
-  envVars: []
-    # - name: RUNNING_HOST
-    #   valueFrom:
-    #     fieldRef:
-    #       fieldPath: status.hostIP
 
   # Enables mounting a k8s volume onto the relay container.
   #
