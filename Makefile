@@ -10,11 +10,11 @@ prepare: #! Setup the project for development
 	@go mod tidy
 
 .PHONY: test
-test: #! Run the unit tests for this application
+test: #! Run quality control tests
 test: prepare lint unittest
 
 .PHONY: unittest
-unittest: #! Run the unit tests for this application
+unittest: #! Run the unit tests
 	@go test ./test
 
 .PHONY: lint

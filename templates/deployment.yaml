@@ -99,6 +99,10 @@ spec:
                     name: {{ .secretName }}
               {{- end }}
             {{- end }}
+
+            {{- if .Values.relay.environmentVariables }}
+              {{- toYaml .Values.relay.environmentVariables | nindent 12 }}
+            {{- end }}
           envFrom:
             - configMapRef:
                 name: {{ include "ld-relay.name" . }}-config

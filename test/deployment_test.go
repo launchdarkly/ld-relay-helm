@@ -35,6 +35,28 @@ func (s *TemplateTest) TestCanControlContainerPorts() {
 	s.Require().Equal("prometheus", deployment.Spec.Template.Spec.Containers[0].Ports[1].Name)
 }
 
+func (s *TemplateTest) TestCanSetEnvironmentVariablesUsingEnvironmentVariables() {
+	options := &helm.Options{
+		SetValues: map[string]string{
+			"relay.environmentVariables[0].name":                         "RUNNING_HOST",
+			"relay.environmentVariables[0].valueFrom.fieldRef.fieldPath": "status.hostIP",
+			"relay.environmentVariables[1].name":                         "ENVIRONMENT",
+			"relay.environmentVariables[1].value":                        "production",
+		},
+		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
+	}
+
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/deployment.yaml"})
+	var deployment appsv1.Deployment
+	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
+
+	s.Require().Equal("RUNNING_HOST", deployment.Spec.Template.Spec.Containers[0].Env[0].Name)
+	s.Require().Equal("status.hostIP", deployment.Spec.Template.Spec.Containers[0].Env[0].ValueFrom.FieldRef.FieldPath)
+
+	s.Require().Equal("ENVIRONMENT", deployment.Spec.Template.Spec.Containers[0].Env[1].Name)
+	s.Require().Equal("production", deployment.Spec.Template.Spec.Containers[0].Env[1].Value)
+}
+
 func (s *TemplateTest) TestCanSetEnvironmentVariablesFromSecrets() {
 	options := &helm.Options{
 		SetValues: map[string]string{
