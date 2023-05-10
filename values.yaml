@@ -140,10 +140,9 @@ relay:
     #   secretName: relay-proxy
     #   secretKey: redis-password
     #
-    # Setting the volumePath and volumeName values will mount the specified secret as a file into the container.
+    # Setting volumePath will mount the specified secret as a file into the container.
     # All file paths are stored under /mnt/secrets
     # - volumePath: path
-    #   volumeName: name
     #   secretName: relay-proxy
     #   secretKey: redis-password
 
