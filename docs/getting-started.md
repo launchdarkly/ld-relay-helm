@@ -72,8 +72,7 @@ Alternatively, secrets can be mounted directly into the Relay Proxy. Secrets are
 # values.yaml
 relay:
    secrets:
-      - volumeName: tls-cert
-        volumePath: my/cert/path.cert # This will be accessible at /mnt/secrets/my/cert/path.cert
+      - volumePath: my/cert/path.cert # This will be accessible at /mnt/secrets/my/cert/path.cert
         secretName: relay
         secretKey: cert
 ```

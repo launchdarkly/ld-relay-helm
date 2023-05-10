@@ -44,18 +44,28 @@ spec:
       - name: {{ include "ld-relay.name" . }}-volume
         {{- toYaml .Values.relay.volume.definition | nindent 8 }}
       {{- end }}
+      {{ $has_projected_volume := false }}
       {{- range .Values.relay.secrets }}
-          {{- if .volumePath }}
-            {{ $has_volumes = true }}
-      - name: {{ .volumeName }}
-        secret:
-          secretName: {{ .secretName }}
-          items:
-            - key: {{ .secretKey }}
-              path:  {{ .volumePath }}
-          {{- end }}
+        {{- if .volumePath }}
+          {{ $has_projected_volume = true }}
+        {{- end }}
       {{- end }}
 
+      {{- if $has_projected_volume }}
+      - name: {{ include "ld-relay.name" . }}-projected-volume
+        projected:
+          sources:
+            {{- range .Values.relay.secrets }}
+              {{- if .volumePath }}
+                {{ $has_volumes = true }}
+            - secret:
+                name: {{ .secretName }}
+                items:
+                  - key: {{ .secretKey }}
+                    path:  {{ .volumePath }}
+              {{- end }}
+            {{- end }}
+      {{- end }}
       serviceAccountName: {{ include "ld-relay.serviceAccountName" . }}
       securityContext:
         {{- if .Values.pod.securityContext }}
@@ -71,12 +81,10 @@ spec:
             - name: {{ include "ld-relay.name" . }}-volume
               mountPath: /mnt/volume
             {{- end }}
-            {{- range .Values.relay.secrets }}
-              {{- if .volumePath }}
-            - name: {{ .volumeName }}
+            {{- if $has_projected_volume }}
+            - name: {{ include "ld-relay.name" . }}-projected-volume
               mountPath: /mnt/secrets/
               readOnly: true
-              {{- end }}
             {{- end }}
           {{- end }}
 

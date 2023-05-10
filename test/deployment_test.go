@@ -80,9 +80,11 @@ func (s *TemplateTest) TestCanMountSecretsAsVolumes() {
 	options := &helm.Options{
 		SetValues: map[string]string{
 			"relay.secrets[0].volumePath": "my-secret-path",
-			"relay.secrets[0].volumeName": "my-secret-name",
 			"relay.secrets[0].secretKey":  "ld-relay",
 			"relay.secrets[0].secretName": "sdk-key",
+			"relay.secrets[1].volumePath": "my-second-secret-path",
+			"relay.secrets[1].secretKey":  "id",
+			"relay.secrets[1].secretName": "application-info",
 		},
 		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
 	}
@@ -93,13 +95,23 @@ func (s *TemplateTest) TestCanMountSecretsAsVolumes() {
 
 	s.Require().Equal(0, len(deployment.Spec.Template.Spec.Containers[0].Env))
 
-	s.Require().Equal("my-secret-name", deployment.Spec.Template.Spec.Containers[0].VolumeMounts[0].Name)
+	s.Require().Len(deployment.Spec.Template.Spec.Containers[0].VolumeMounts, 1)
+	s.Require().Equal("ld-relay-projected-volume", deployment.Spec.Template.Spec.Containers[0].VolumeMounts[0].Name)
 	s.Require().Equal("/mnt/secrets/", deployment.Spec.Template.Spec.Containers[0].VolumeMounts[0].MountPath)
 
-	s.Require().Equal("my-secret-name", deployment.Spec.Template.Spec.Volumes[1].Name)
-	s.Require().Equal("sdk-key", deployment.Spec.Template.Spec.Volumes[1].Secret.SecretName)
-	s.Require().Equal("ld-relay", deployment.Spec.Template.Spec.Volumes[1].Secret.Items[0].Key)
-	s.Require().Equal("my-secret-path", deployment.Spec.Template.Spec.Volumes[1].Secret.Items[0].Path)
+	s.Require().Len(deployment.Spec.Template.Spec.Volumes, 2)
+
+	volume := deployment.Spec.Template.Spec.Volumes[1]
+	s.Require().Equal("ld-relay-projected-volume", volume.Name)
+
+	s.Require().Len(volume.Projected.Sources, 2)
+	s.Require().Equal("sdk-key", volume.Projected.Sources[0].Secret.Name)
+	s.Require().Equal("ld-relay", volume.Projected.Sources[0].Secret.Items[0].Key)
+	s.Require().Equal("my-secret-path", volume.Projected.Sources[0].Secret.Items[0].Path)
+
+	s.Require().Equal("application-info", volume.Projected.Sources[1].Secret.Name)
+	s.Require().Equal("id", volume.Projected.Sources[1].Secret.Items[0].Key)
+	s.Require().Equal("my-second-secret-path", volume.Projected.Sources[1].Secret.Items[0].Path)
 }
 
 func (s *TemplateTest) TestCanLoadConfigFromVolume() {
