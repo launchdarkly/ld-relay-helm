@@ -4,6 +4,10 @@ Change log
 All notable changes to the LaunchDarkly Relay Proxy Helm Chart will be documented in this file. This project adheres to [Semantic Versioning](https://semver.org).
 
 
+## [2.2.1] - 2023-05-10
+### Fixed:
+- Fix name collision when setting multiple secret values as volume mounts.
+
 ## [2.2.0] - 2023-04-27
 ### Added:
 - Support setting environment variables directly on the container spec through `relay.environmentVariables`. This enables more complex variable definitions. (Thanks, [uristernik](https://github.com/launchdarkly/ld-relay-helm/pull/34)!)
