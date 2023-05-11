@@ -254,6 +254,70 @@ func (s *TemplateTest) TestCanSetPodSecurityContext() {
 	s.Require().Equal(int64(2000), *deployment.Spec.Template.Spec.SecurityContext.RunAsGroup)
 }
 
+func (s *TemplateTest) TestProbesDefaultToSaneValues() {
+	options := &helm.Options{
+		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
+	}
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/deployment.yaml"})
+	var deployment appsv1.Deployment
+	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
+
+	var none corev1.URIScheme
+	none = ""
+	s.Require().Equal("/status", *&deployment.Spec.Template.Spec.Containers[0].LivenessProbe.Handler.HTTPGet.Path)
+	s.Require().Equal("api", deployment.Spec.Template.Spec.Containers[0].LivenessProbe.Handler.HTTPGet.Port.String())
+	s.Require().Equal(none, *&deployment.Spec.Template.Spec.Containers[0].LivenessProbe.Handler.HTTPGet.Scheme)
+
+	s.Require().Equal("/status", *&deployment.Spec.Template.Spec.Containers[0].ReadinessProbe.Handler.HTTPGet.Path)
+	s.Require().Equal("api", deployment.Spec.Template.Spec.Containers[0].ReadinessProbe.Handler.HTTPGet.Port.String())
+	s.Require().Equal(none, *&deployment.Spec.Template.Spec.Containers[0].ReadinessProbe.Handler.HTTPGet.Scheme)
+}
+
+func (s *TemplateTest) TestCanAffectHttpGetProbes() {
+	options := &helm.Options{
+		SetValues: map[string]string{
+			"relay.livenessProbe.httpGet.path":   "/liveness",
+			"relay.livenessProbe.httpGet.port":   "8000",
+			"relay.livenessProbe.httpGet.scheme": "HTTPS",
+
+			"relay.readinessProbe.httpGet.path":   "/readiness",
+			"relay.readinessProbe.httpGet.port":   "9000",
+			"relay.readinessProbe.httpGet.scheme": "HTTPS",
+		},
+		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
+	}
+
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/deployment.yaml"})
+	var deployment appsv1.Deployment
+	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
+
+	s.Require().Equal("/liveness", *&deployment.Spec.Template.Spec.Containers[0].LivenessProbe.Handler.HTTPGet.Path)
+	s.Require().Equal(int(8000), deployment.Spec.Template.Spec.Containers[0].LivenessProbe.Handler.HTTPGet.Port.IntValue())
+	s.Require().Equal(corev1.URISchemeHTTPS, *&deployment.Spec.Template.Spec.Containers[0].LivenessProbe.Handler.HTTPGet.Scheme)
+
+	s.Require().Equal("/readiness", *&deployment.Spec.Template.Spec.Containers[0].ReadinessProbe.Handler.HTTPGet.Path)
+	s.Require().Equal(int(9000), deployment.Spec.Template.Spec.Containers[0].ReadinessProbe.Handler.HTTPGet.Port.IntValue())
+	s.Require().Equal(corev1.URISchemeHTTPS, *&deployment.Spec.Template.Spec.Containers[0].ReadinessProbe.Handler.HTTPGet.Scheme)
+
+}
+
+func (s *TemplateTest) TestCanDisableProbes() {
+	options := &helm.Options{
+		SetValues: map[string]string{
+			"relay.livenessProbe":  "null",
+			"relay.readinessProbe": "null",
+		},
+		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
+	}
+
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/deployment.yaml"})
+	var deployment appsv1.Deployment
+	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
+
+	s.Require().Nil(deployment.Spec.Template.Spec.Containers[0].LivenessProbe)
+	s.Require().Nil(deployment.Spec.Template.Spec.Containers[0].ReadinessProbe)
+}
+
 func (s *TemplateTest) TestCanSetDeprecatedPodSecurityContext() {
 	options := &helm.Options{
 		SetValues: map[string]string{

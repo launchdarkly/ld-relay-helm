@@ -124,14 +124,14 @@ spec:
                 protocol: {{ .protocol }}
                 name: {{ .name }}
             {{- end }}
+          {{- if .Values.relay.livenessProbe }}
           livenessProbe:
-            httpGet:
-              path: /status
-              port: api
+            {{- toYaml .Values.relay.livenessProbe | nindent 12 }}
+          {{- end }}
+          {{- if .Values.relay.readinessProbe }}
           readinessProbe:
-            httpGet:
-              path: /status
-              port: api
+            {{- toYaml .Values.relay.readinessProbe | nindent 12 }}
+          {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
