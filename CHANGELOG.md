@@ -8,6 +8,9 @@ All notable changes to the LaunchDarkly Relay Proxy Helm Chart will be documente
 ### Fixed:
 - Fix name collision when setting multiple secret values as volume mounts.
 
+### Removed:
+- `relay.secrets.volumeName` is no longer used when mounting secrets as volumes as all secrets as mounted within a shared volume.
+
 ## [2.2.0] - 2023-04-27
 ### Added:
 - Support setting environment variables directly on the container spec through `relay.environmentVariables`. This enables more complex variable definitions. (Thanks, [uristernik](https://github.com/launchdarkly/ld-relay-helm/pull/34)!)
