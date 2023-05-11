@@ -4,6 +4,10 @@ Change log
 All notable changes to the LaunchDarkly Relay Proxy Helm Chart will be documented in this file. This project adheres to [Semantic Versioning](https://semver.org).
 
 
+## [2.2.2] - 2023-05-11
+### Fixed:
+- Liveness and readiness probes, by default use an HTTP scheme. This breaks once TLS is enabled in the relay. values file now updated to allow these schemes to be overridden.
+
 ## [2.2.1] - 2023-05-10
 ### Fixed:
 - Fix name collision when setting multiple secret values as volume mounts.
