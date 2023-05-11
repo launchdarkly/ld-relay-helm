@@ -146,6 +146,33 @@ relay:
     #   secretName: relay-proxy
     #   secretKey: redis-password
 
+  # Default liveness and readiness probes for the relay. This assumes the relay will be running in the standard non-TLS mode.
+  #
+  # If TLS is enabled, you will need to update this scheme to use HTTPS. You can do this by setting:
+  #
+  # relay:
+  #   livenessProbe:
+  #     httpGet:
+  #       scheme: HTTPS
+  #   readinessProbe:
+  #     httpGet:
+  #       scheme: HTTPS
+  #
+  # If you wish to fully disable both probes, you can do so by setting:
+  #
+  # relay:
+  #   livenessProbe: null
+  #   readinessProbe: null
+  livenessProbe:
+    httpGet:
+      path: /status
+      port: api
+  readinessProbe:
+      httpGet:
+        path: /status
+        port: api
+
+
   # Enables mounting a k8s volume onto the relay container.
   #
   # This configuration option is used to optionally provide access to an
