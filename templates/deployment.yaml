@@ -108,9 +108,9 @@ spec:
               {{- toYaml .Values.relay.environmentVariables | nindent 12 }}
             {{- end }}
           envFrom:
-            {{- if .Values.relay.secretEnvironmentVariables }}
+            {{- if .Values.relay.envFromSecret }}
             - secretRef:
-                name: {{ .Release.Name }}-secret-environment-variables
+                name: {{ .Values.relay.envFromSecret }}
             {{- end }}
             - configMapRef:
                 name: {{ include "ld-relay.name" . }}-config
