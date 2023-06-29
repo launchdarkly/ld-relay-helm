@@ -76,6 +76,21 @@ func (s *TemplateTest) TestCanSetEnvironmentVariablesFromSecrets() {
 	s.Require().Equal("sdk-key", deployment.Spec.Template.Spec.Containers[0].Env[0].ValueFrom.SecretKeyRef.Name)
 }
 
+func (s *TemplateTest) TestCanSetEnvironmentVariablesFromEnvFromSecrets() {
+	options := &helm.Options{
+		SetValues: map[string]string{
+			"relay.secretEnvironmentVariables": "true",
+		},
+		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
+	}
+
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/deployment.yaml"})
+	var deployment appsv1.Deployment
+	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
+
+	s.Require().Equal("ld-relay-test-secret-environment-variables", deployment.Spec.Template.Spec.Containers[0].EnvFrom[0].SecretRef.Name)
+}
+
 func (s *TemplateTest) TestCanMountSecretsAsVolumes() {
 	options := &helm.Options{
 		SetValues: map[string]string{
