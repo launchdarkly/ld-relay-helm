@@ -87,17 +87,14 @@ spec:
               readOnly: true
             {{- end }}
           {{- end }}
-
           {{- if .Values.relay.volume.config }}
           command: ["/usr/bin/ldr", "--config", "/mnt/volume/{{ .Values.relay.volume.config }}", "--allow-missing-file", "--from-env"]
           {{- end }}
-
           env:
             {{- if .Values.relay.volume.offline }}
             - name: FILE_DATA_SOURCE
               value: /mnt/volume/{{ .Values.relay.volume.offline }}
             {{- end }}
-
             {{- range .Values.relay.secrets }}
               {{- if .envName }}
             - name: {{ .envName }}
@@ -107,11 +104,14 @@ spec:
                     name: {{ .secretName }}
               {{- end }}
             {{- end }}
-
             {{- if .Values.relay.environmentVariables }}
               {{- toYaml .Values.relay.environmentVariables | nindent 12 }}
             {{- end }}
           envFrom:
+            {{- if .Values.relay.secretEnvironmentVariables }}
+            - secretRef:
+                name: {{ .Release.Name }}-secret-environment-variables
+            {{- end }}
             - configMapRef:
                 name: {{ include "ld-relay.name" . }}-config
           securityContext:

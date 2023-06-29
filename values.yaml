@@ -145,6 +145,10 @@ relay:
     # - volumePath: path
     #   secretName: relay-proxy
     #   secretKey: redis-password
+  
+  # Use K8s secrets to set envFrom. This is different from the `secrets` because this dynamically sets the environment variables
+  # from the key value pairs in the k8s secret. This is useful for tools like external secrets
+  secretEnvironmentVariables: false
 
   # Default liveness and readiness probes for the relay. This assumes the relay will be running in the standard non-TLS mode.
   #
