@@ -35,9 +35,11 @@ spec:
         - name: ld-relay
 
           env:
+
           envFrom:
             - configMapRef:
                 name: ld-relay-config
+
           securityContext:
             {}
           image: "launchdarkly/ld-relay:7.2.1"
