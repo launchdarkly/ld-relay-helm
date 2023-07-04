@@ -87,9 +87,11 @@ spec:
               readOnly: true
             {{- end }}
           {{- end }}
+
           {{- if .Values.relay.volume.config }}
           command: ["/usr/bin/ldr", "--config", "/mnt/volume/{{ .Values.relay.volume.config }}", "--allow-missing-file", "--from-env"]
           {{- end }}
+
           env:
             {{- if .Values.relay.volume.offline }}
             - name: FILE_DATA_SOURCE
@@ -107,6 +109,7 @@ spec:
             {{- if .Values.relay.environmentVariables }}
               {{- toYaml .Values.relay.environmentVariables | nindent 12 }}
             {{- end }}
+
           envFrom:
             {{- if .Values.relay.envFromSecret }}
             - secretRef:
@@ -114,6 +117,7 @@ spec:
             {{- end }}
             - configMapRef:
                 name: {{ include "ld-relay.name" . }}-config
+
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
