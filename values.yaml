@@ -40,6 +40,17 @@ podAnnotations: {}
 podSecurityContext: {}
   # fsGroup: 2000
 
+podDisruptionBudget:
+  # Specifies whether a pdb should be created
+  enabled: false
+  # Number of pods that are available after eviction as number or percentage (eg.: 50% or 2)
+  ## Defaults to 0 if not specified
+  minAvailable: ""
+  # Number of pods that are unavailable after eviction as number or percentage (eg.: 50% or 2).
+  # Only one of (minavailable or maxUnavailable) can be specificed.
+  # Has higher precedence over `podDisruptionBudget.minAvailable`
+  maxUnavailable: ""
+
 securityContext: {}
   # capabilities:
   #   drop:
