@@ -2,7 +2,7 @@ package test
 
 import (
 	"flag"
-	"io/ioutil"
+	"os"
 	"regexp"
 
 	"github.com/gruntwork-io/terratest/modules/helm"
@@ -39,11 +39,11 @@ func (s *TemplateGoldenTest) TestContainerGoldenTestDefaults() {
 	goldenFile := "golden/" + s.GoldenFileName + ".yaml"
 
 	if *update {
-		err := ioutil.WriteFile(goldenFile, bytes, 0644)
+		err := os.WriteFile(goldenFile, bytes, 0644)
 		s.Require().NoError(err, "Golden file was not writable")
 	}
 
-	expected, err := ioutil.ReadFile(goldenFile)
+	expected, err := os.ReadFile(goldenFile)
 
 	// then
 	s.Require().NoError(err, "Golden file doesn't exist or was not readable")

@@ -8,8 +8,8 @@ Basic [installation](#installation) and [configuration](#configuration-options) 
 
 To learn more, read the [Getting started](./docs/getting-started.md) guide. For additional examples, read:
 
-* [Offline mode](./docs/examples/offline-mode.md)
-* [Automatic configuration](./docs/examples/automatic-configuration.md)
+- [Offline mode](./docs/examples/offline-mode.md)
+- [Automatic configuration](./docs/examples/automatic-configuration.md)
 
 ## LaunchDarkly overview
 
@@ -36,9 +36,8 @@ To customize this Helm chart, override the configuration options defined in the 
 
 Here's a summary of the available configuration options:
 
-
 | Key                                           | Type    | Default                                                      | Description                                                                                              |
-|-----------------------------------------------|---------|--------------------------------------------------------------|----------------------------------------------------------------------------------------------------------|
+| --------------------------------------------- | ------- | ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
 | relay.environment                             | object  | `{}`                                                         | Defines container environment variables to configure the Relay Proxy instance (via ConfigMap)            |
 | relay.environmentVariables                    | array   | `[]`                                                         | Defines container environment variables to configure the Relay Proxy instance (via container spec)       |
 | relay.envFromSecret                           | string  | `null`                                                       | Defines container environment variables to configure the Relay Proxy instance (via existing k8s secrets) |
@@ -79,6 +78,10 @@ Here's a summary of the available configuration options:
 | nodeSelector                                  | object  | `{}`                                                         | Selector to target node placement for the relay pod                                                      |
 | tolerations                                   | array   | `[]`                                                         | Specify pod tolerations                                                                                  |
 | affinity                                      | object  | `{}`                                                         | Specify pod affinity                                                                                     |
+| podDistruptionBudget.enabled                  | boolean | `false`                                                      | Enabled podDistruptionBudget                                                                             |
+| podDistruptionBudget.minAvailable             | string  | `""`                                                         | Minimum number of pods that are available after eviction as number or percentage                         |
+| podDistruptionBudget.maxUnavailable           | string  | `""`                                                         | Maximum number of pods that are unavailable after eviction as number or percentage                       |
+| topologySpreadConstraints                     | array   | `[]`                                                         | Specify the topology spread constrait definitions to apply to the relay deployment                       |
 
 ## Learn more
 
@@ -90,14 +93,14 @@ We encourage pull requests and other contributions from the community. Check out
 
 ## About LaunchDarkly
 
-* LaunchDarkly is a continuous delivery platform that provides feature flags as a service and allows developers to iterate quickly and safely. We allow you to easily flag your features and manage them from the LaunchDarkly dashboard.  With LaunchDarkly, you can:
-    * Roll out a new feature to a subset of your users (like a group of users who opt-in to a beta tester group), gathering feedback and bug reports from real-world use cases.
-    * Gradually roll out a feature to an increasing percentage of users, and track the effect that the feature has on key metrics (for instance, how likely is a user to complete a purchase if they have feature A versus feature B?).
-    * Turn off a feature that you realize is causing performance problems in production, without needing to re-deploy, or even restart the application with a changed configuration file.
-    * Grant access to certain features based on user attributes, like payment plan (eg: users on the ‘gold’ plan get access to more features than users in the ‘silver’ plan). Disable parts of your application to facilitate maintenance, without taking everything offline.
-* LaunchDarkly provides feature flag SDKs for a wide variety of languages and technologies. Read [our documentation](https://docs.launchdarkly.com/docs) for a complete list.
-* Explore LaunchDarkly
-    * [launchdarkly.com](https://www.launchdarkly.com/ "LaunchDarkly Main Website") for more information
-    * [docs.launchdarkly.com](https://docs.launchdarkly.com/  "LaunchDarkly Documentation") for our documentation and SDK reference guides
-    * [apidocs.launchdarkly.com](https://apidocs.launchdarkly.com/  "LaunchDarkly API Documentation") for our API documentation
-    * [launchdarkly.com/blog](https://launchdarkly.com/blog/  "LaunchDarkly Blog Documentation") for the latest product updates
+- LaunchDarkly is a continuous delivery platform that provides feature flags as a service and allows developers to iterate quickly and safely. We allow you to easily flag your features and manage them from the LaunchDarkly dashboard. With LaunchDarkly, you can:
+  - Roll out a new feature to a subset of your users (like a group of users who opt-in to a beta tester group), gathering feedback and bug reports from real-world use cases.
+  - Gradually roll out a feature to an increasing percentage of users, and track the effect that the feature has on key metrics (for instance, how likely is a user to complete a purchase if they have feature A versus feature B?).
+  - Turn off a feature that you realize is causing performance problems in production, without needing to re-deploy, or even restart the application with a changed configuration file.
+  - Grant access to certain features based on user attributes, like payment plan (eg: users on the ‘gold’ plan get access to more features than users in the ‘silver’ plan). Disable parts of your application to facilitate maintenance, without taking everything offline.
+- LaunchDarkly provides feature flag SDKs for a wide variety of languages and technologies. Read [our documentation](https://docs.launchdarkly.com/docs) for a complete list.
+- Explore LaunchDarkly
+  - [launchdarkly.com](https://www.launchdarkly.com/ "LaunchDarkly Main Website") for more information
+  - [docs.launchdarkly.com](https://docs.launchdarkly.com/ "LaunchDarkly Documentation") for our documentation and SDK reference guides
+  - [apidocs.launchdarkly.com](https://apidocs.launchdarkly.com/ "LaunchDarkly API Documentation") for our API documentation
+  - [launchdarkly.com/blog](https://launchdarkly.com/blog/ "LaunchDarkly Blog Documentation") for the latest product updates

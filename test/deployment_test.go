@@ -376,3 +376,48 @@ func (s *TemplateTest) TestPodSecurityContextTakesPrecendenceOverDeprecatedOptio
 
 	s.Require().Equal(int64(2000), *deployment.Spec.Template.Spec.SecurityContext.RunAsUser)
 }
+
+func (s *TemplateTest) TestCanSetSingleTopologySpreadConstraint() {
+	options := &helm.Options{
+		SetValues: map[string]string{
+			"topologySpreadConstraints[0].maxSkew":           "1",
+			"topologySpreadConstraints[0].topologyKey":       "topology.kubernetes.io/zone",
+			"topologySpreadConstraints[0].whenUnsatisfiable": "DoNotSchedule",
+		},
+		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
+	}
+
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/deployment.yaml"})
+	var deployment appsv1.Deployment
+	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
+
+	s.Require().Equal(int32(1), deployment.Spec.Template.Spec.TopologySpreadConstraints[0].MaxSkew)
+	s.Require().Equal("topology.kubernetes.io/zone", deployment.Spec.Template.Spec.TopologySpreadConstraints[0].TopologyKey)
+	s.Require().Equal(corev1.UnsatisfiableConstraintAction("DoNotSchedule"), deployment.Spec.Template.Spec.TopologySpreadConstraints[0].WhenUnsatisfiable)
+}
+
+func (s *TemplateTest) TestCanSetMultipleTopologySpreadConstraints() {
+	options := &helm.Options{
+		SetValues: map[string]string{
+			"topologySpreadConstraints[0].maxSkew":           "1",
+			"topologySpreadConstraints[0].topologyKey":       "topology.kubernetes.io/zone",
+			"topologySpreadConstraints[0].whenUnsatisfiable": "DoNotSchedule",
+			"topologySpreadConstraints[1].maxSkew":           "1",
+			"topologySpreadConstraints[1].topologyKey":       "topology.kubernetes.io/region",
+			"topologySpreadConstraints[1].whenUnsatisfiable": "ScheduleAnyway",
+		},
+		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
+	}
+
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/deployment.yaml"})
+	var deployment appsv1.Deployment
+	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
+
+	s.Require().Equal(int32(1), deployment.Spec.Template.Spec.TopologySpreadConstraints[0].MaxSkew)
+	s.Require().Equal("topology.kubernetes.io/zone", deployment.Spec.Template.Spec.TopologySpreadConstraints[0].TopologyKey)
+	s.Require().Equal(corev1.UnsatisfiableConstraintAction("DoNotSchedule"), deployment.Spec.Template.Spec.TopologySpreadConstraints[0].WhenUnsatisfiable)
+
+	s.Require().Equal(int32(1), deployment.Spec.Template.Spec.TopologySpreadConstraints[1].MaxSkew)
+	s.Require().Equal("topology.kubernetes.io/region", deployment.Spec.Template.Spec.TopologySpreadConstraints[1].TopologyKey)
+	s.Require().Equal(corev1.UnsatisfiableConstraintAction("ScheduleAnyway"), deployment.Spec.Template.Spec.TopologySpreadConstraints[1].WhenUnsatisfiable)
+}

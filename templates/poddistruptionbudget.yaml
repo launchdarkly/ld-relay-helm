@@ -12,7 +12,7 @@ metadata:
 spec:
   selector:
     matchLabels:
-      {{- include "ld-relay.selectorLabels" . | nindent 4 }}
+      {{- include "ld-relay.selectorLabels" . | nindent 6 }}
   {{- with .Values.podDisruptionBudget.maxUnavailable }}
   maxUnavailable: {{ . }}
   {{- else }}
