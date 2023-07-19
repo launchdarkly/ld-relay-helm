@@ -78,10 +78,10 @@ Here's a summary of the available configuration options:
 | nodeSelector                                  | object  | `{}`                                                         | Selector to target node placement for the relay pod                                                      |
 | tolerations                                   | array   | `[]`                                                         | Specify pod tolerations                                                                                  |
 | affinity                                      | object  | `{}`                                                         | Specify pod affinity                                                                                     |
-| podDistruptionBudget.enabled                  | boolean | `false`                                                      | Enabled podDistruptionBudget                                                                             |
-| podDistruptionBudget.minAvailable             | string  | `""`                                                         | Minimum number of pods that are available after eviction as number or percentage                         |
-| podDistruptionBudget.maxUnavailable           | string  | `""`                                                         | Maximum number of pods that are unavailable after eviction as number or percentage                       |
-| topologySpreadConstraints                     | array   | `[]`                                                         | Specify the topology spread constrait definitions to apply to the relay deployment                       |
+| pod.distruptionBudget.enabled                 | boolean | `false`                                                      | Enabled podDistruptionBudget                                                                             |
+| pod.distruptionBudget.minAvailable            | string  | `""`                                                         | Minimum number of pods that are available after eviction as number or percentage                         |
+| pod.distruptionBudget.maxUnavailable          | string  | `""`                                                         | Maximum number of pods that are unavailable after eviction as number or percentage                       |
+| pod.topologySpreadConstraints                 | array   | `[]`                                                         | Specify the topology spread constrait definitions to apply to the relay deployment                       |
 
 ## Learn more
 
