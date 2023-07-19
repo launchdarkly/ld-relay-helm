@@ -380,9 +380,9 @@ func (s *TemplateTest) TestPodSecurityContextTakesPrecendenceOverDeprecatedOptio
 func (s *TemplateTest) TestCanSetSingleTopologySpreadConstraint() {
 	options := &helm.Options{
 		SetValues: map[string]string{
-			"topologySpreadConstraints[0].maxSkew":           "1",
-			"topologySpreadConstraints[0].topologyKey":       "topology.kubernetes.io/zone",
-			"topologySpreadConstraints[0].whenUnsatisfiable": "DoNotSchedule",
+			"pod.topologySpreadConstraints[0].maxSkew":           "1",
+			"pod.topologySpreadConstraints[0].topologyKey":       "topology.kubernetes.io/zone",
+			"pod.topologySpreadConstraints[0].whenUnsatisfiable": "DoNotSchedule",
 		},
 		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
 	}
@@ -394,17 +394,21 @@ func (s *TemplateTest) TestCanSetSingleTopologySpreadConstraint() {
 	s.Require().Equal(int32(1), deployment.Spec.Template.Spec.TopologySpreadConstraints[0].MaxSkew)
 	s.Require().Equal("topology.kubernetes.io/zone", deployment.Spec.Template.Spec.TopologySpreadConstraints[0].TopologyKey)
 	s.Require().Equal(corev1.UnsatisfiableConstraintAction("DoNotSchedule"), deployment.Spec.Template.Spec.TopologySpreadConstraints[0].WhenUnsatisfiable)
+	s.Require().Equal("ld-relay", deployment.Spec.Template.Spec.TopologySpreadConstraints[0].LabelSelector.MatchLabels["app.kubernetes.io/name"])
+	s.Require().Equal("ld-relay-test", deployment.Spec.Template.Spec.TopologySpreadConstraints[0].LabelSelector.MatchLabels["app.kubernetes.io/instance"])
 }
 
 func (s *TemplateTest) TestCanSetMultipleTopologySpreadConstraints() {
 	options := &helm.Options{
 		SetValues: map[string]string{
-			"topologySpreadConstraints[0].maxSkew":           "1",
-			"topologySpreadConstraints[0].topologyKey":       "topology.kubernetes.io/zone",
-			"topologySpreadConstraints[0].whenUnsatisfiable": "DoNotSchedule",
-			"topologySpreadConstraints[1].maxSkew":           "1",
-			"topologySpreadConstraints[1].topologyKey":       "topology.kubernetes.io/region",
-			"topologySpreadConstraints[1].whenUnsatisfiable": "ScheduleAnyway",
+			"pod.topologySpreadConstraints[0].maxSkew":                                "1",
+			"pod.topologySpreadConstraints[0].topologyKey":                            "topology.kubernetes.io/zone",
+			"pod.topologySpreadConstraints[0].whenUnsatisfiable":                      "DoNotSchedule",
+			"pod.topologySpreadConstraints[1].maxSkew":                                "1",
+			"pod.topologySpreadConstraints[1].topologyKey":                            "topology.kubernetes.io/region",
+			"pod.topologySpreadConstraints[1].whenUnsatisfiable":                      "ScheduleAnyway",
+			"pod.topologySpreadConstraints[1].labelSelector.matchLabels.first-label":  "example-first-label",
+			"pod.topologySpreadConstraints[1].labelSelector.matchLabels.second-label": "example-second-label",
 		},
 		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
 	}
@@ -416,8 +420,15 @@ func (s *TemplateTest) TestCanSetMultipleTopologySpreadConstraints() {
 	s.Require().Equal(int32(1), deployment.Spec.Template.Spec.TopologySpreadConstraints[0].MaxSkew)
 	s.Require().Equal("topology.kubernetes.io/zone", deployment.Spec.Template.Spec.TopologySpreadConstraints[0].TopologyKey)
 	s.Require().Equal(corev1.UnsatisfiableConstraintAction("DoNotSchedule"), deployment.Spec.Template.Spec.TopologySpreadConstraints[0].WhenUnsatisfiable)
+	s.Require().Equal("topology.kubernetes.io/zone", deployment.Spec.Template.Spec.TopologySpreadConstraints[0].TopologyKey)
+	s.Require().Equal("ld-relay", deployment.Spec.Template.Spec.TopologySpreadConstraints[0].LabelSelector.MatchLabels["app.kubernetes.io/name"])
+	s.Require().Equal("ld-relay-test", deployment.Spec.Template.Spec.TopologySpreadConstraints[0].LabelSelector.MatchLabels["app.kubernetes.io/instance"])
 
 	s.Require().Equal(int32(1), deployment.Spec.Template.Spec.TopologySpreadConstraints[1].MaxSkew)
 	s.Require().Equal("topology.kubernetes.io/region", deployment.Spec.Template.Spec.TopologySpreadConstraints[1].TopologyKey)
 	s.Require().Equal(corev1.UnsatisfiableConstraintAction("ScheduleAnyway"), deployment.Spec.Template.Spec.TopologySpreadConstraints[1].WhenUnsatisfiable)
+	s.Require().Equal("example-first-label", deployment.Spec.Template.Spec.TopologySpreadConstraints[1].LabelSelector.MatchLabels["first-label"])
+	s.Require().Equal("example-second-label", deployment.Spec.Template.Spec.TopologySpreadConstraints[1].LabelSelector.MatchLabels["second-label"])
+	s.Require().Empty(deployment.Spec.Template.Spec.TopologySpreadConstraints[1].LabelSelector.MatchLabels["app.kubernetes.io/name"])
+	s.Require().Empty(deployment.Spec.Template.Spec.TopologySpreadConstraints[1].LabelSelector.MatchLabels["app.kubernetes.io/instance"])
 }

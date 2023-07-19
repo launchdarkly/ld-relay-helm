@@ -9,7 +9,7 @@ import (
 func (s *TemplateTest) TestCanEnablePDB() {
 	options := &helm.Options{
 		SetValues: map[string]string{
-			"podDisruptionBudget.enabled": "true",
+			"pod.distruptionBudget.enabled": "true",
 		},
 		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
 	}
@@ -24,8 +24,8 @@ func (s *TemplateTest) TestCanEnablePDB() {
 func (s *TemplateTest) TestCanChangePDBMaxUnavailableNumber() {
 	options := &helm.Options{
 		SetValues: map[string]string{
-			"podDisruptionBudget.enabled":        "true",
-			"podDisruptionBudget.maxUnavailable": "2",
+			"pod.distruptionBudget.enabled":        "true",
+			"pod.distruptionBudget.maxUnavailable": "2",
 		},
 		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
 	}
@@ -40,8 +40,8 @@ func (s *TemplateTest) TestCanChangePDBMaxUnavailableNumber() {
 func (s *TemplateTest) TestCanChangePDBMaxUnavailablePercent() {
 	options := &helm.Options{
 		SetValues: map[string]string{
-			"podDisruptionBudget.enabled":        "true",
-			"podDisruptionBudget.maxUnavailable": "50%",
+			"pod.distruptionBudget.enabled":        "true",
+			"pod.distruptionBudget.maxUnavailable": "50%",
 		},
 		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
 	}
@@ -56,8 +56,8 @@ func (s *TemplateTest) TestCanChangePDBMaxUnavailablePercent() {
 func (s *TemplateTest) TestCanChangePDBMinAvailableNumber() {
 	options := &helm.Options{
 		SetValues: map[string]string{
-			"podDisruptionBudget.enabled":      "true",
-			"podDisruptionBudget.minAvailable": "2",
+			"pod.distruptionBudget.enabled":      "true",
+			"pod.distruptionBudget.minAvailable": "2",
 		},
 		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
 	}
@@ -72,8 +72,8 @@ func (s *TemplateTest) TestCanChangePDBMinAvailableNumber() {
 func (s *TemplateTest) TestCanChangePDBMinAvailablePercent() {
 	options := &helm.Options{
 		SetValues: map[string]string{
-			"podDisruptionBudget.enabled":      "true",
-			"podDisruptionBudget.minAvailable": "50%",
+			"pod.distruptionBudget.enabled":      "true",
+			"pod.distruptionBudget.minAvailable": "50%",
 		},
 		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
 	}
@@ -88,9 +88,9 @@ func (s *TemplateTest) TestCanChangePDBMinAvailablePercent() {
 func (s *TemplateTest) TestBothPDBValues() {
 	options := &helm.Options{
 		SetValues: map[string]string{
-			"podDisruptionBudget.enabled":        "true",
-			"podDisruptionBudget.minAvailable":   "50%",
-			"podDisruptionBudget.maxUnavailable": "2",
+			"pod.distruptionBudget.enabled":        "true",
+			"pod.distruptionBudget.minAvailable":   "50%",
+			"pod.distruptionBudget.maxUnavailable": "2",
 		},
 		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
 	}
