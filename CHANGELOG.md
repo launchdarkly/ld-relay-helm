@@ -4,6 +4,10 @@ Change log
 All notable changes to the LaunchDarkly Relay Proxy Helm Chart will be documented in this file. This project adheres to [Semantic Versioning](https://semver.org).
 
 
+## [2.4.0] - 2023-07-20
+### Added:
+- Support TopologySpreadConstraint and PodDistruptionBudget. (Thanks, [pjaak](https://github.com/launchdarkly/ld-relay-helm/pull/47)!)
+
 ## [2.3.0] - 2023-07-04
 ### Added:
 - Support Dynamic EnvFrom existing K8s Secrets. (Thanks, [LiamStorkey](https://github.com/launchdarkly/ld-relay-helm/pull/45)!)
