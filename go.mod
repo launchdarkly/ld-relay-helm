@@ -1,6 +1,6 @@
 module ld-relay-helm
 
-go 1.18
+go 1.19
 
 require (
 	github.com/gruntwork-io/terratest v0.43.6
