@@ -289,15 +289,14 @@ func (s *TemplateTest) TestProbesDefaultToSaneValues() {
 	var deployment appsv1.Deployment
 	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
 
-	var none corev1.URIScheme
-	none = ""
-	s.Require().Equal("/status", *&deployment.Spec.Template.Spec.Containers[0].LivenessProbe.Handler.HTTPGet.Path)
-	s.Require().Equal("api", deployment.Spec.Template.Spec.Containers[0].LivenessProbe.Handler.HTTPGet.Port.String())
-	s.Require().Equal(none, *&deployment.Spec.Template.Spec.Containers[0].LivenessProbe.Handler.HTTPGet.Scheme)
+	var none corev1.URIScheme = ""
+	s.Require().Equal("/status", deployment.Spec.Template.Spec.Containers[0].LivenessProbe.ProbeHandler.HTTPGet.Path)
+	s.Require().Equal("api", deployment.Spec.Template.Spec.Containers[0].LivenessProbe.ProbeHandler.HTTPGet.Port.String())
+	s.Require().Equal(none, deployment.Spec.Template.Spec.Containers[0].LivenessProbe.ProbeHandler.HTTPGet.Scheme)
 
-	s.Require().Equal("/status", *&deployment.Spec.Template.Spec.Containers[0].ReadinessProbe.Handler.HTTPGet.Path)
-	s.Require().Equal("api", deployment.Spec.Template.Spec.Containers[0].ReadinessProbe.Handler.HTTPGet.Port.String())
-	s.Require().Equal(none, *&deployment.Spec.Template.Spec.Containers[0].ReadinessProbe.Handler.HTTPGet.Scheme)
+	s.Require().Equal("/status", deployment.Spec.Template.Spec.Containers[0].ReadinessProbe.ProbeHandler.HTTPGet.Path)
+	s.Require().Equal("api", deployment.Spec.Template.Spec.Containers[0].ReadinessProbe.ProbeHandler.HTTPGet.Port.String())
+	s.Require().Equal(none, deployment.Spec.Template.Spec.Containers[0].ReadinessProbe.ProbeHandler.HTTPGet.Scheme)
 }
 
 func (s *TemplateTest) TestCanAffectHttpGetProbes() {
@@ -318,13 +317,13 @@ func (s *TemplateTest) TestCanAffectHttpGetProbes() {
 	var deployment appsv1.Deployment
 	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
 
-	s.Require().Equal("/liveness", *&deployment.Spec.Template.Spec.Containers[0].LivenessProbe.Handler.HTTPGet.Path)
-	s.Require().Equal(int(8000), deployment.Spec.Template.Spec.Containers[0].LivenessProbe.Handler.HTTPGet.Port.IntValue())
-	s.Require().Equal(corev1.URISchemeHTTPS, *&deployment.Spec.Template.Spec.Containers[0].LivenessProbe.Handler.HTTPGet.Scheme)
+	s.Require().Equal("/liveness", deployment.Spec.Template.Spec.Containers[0].LivenessProbe.ProbeHandler.HTTPGet.Path)
+	s.Require().Equal(int(8000), deployment.Spec.Template.Spec.Containers[0].LivenessProbe.ProbeHandler.HTTPGet.Port.IntValue())
+	s.Require().Equal(corev1.URISchemeHTTPS, deployment.Spec.Template.Spec.Containers[0].LivenessProbe.ProbeHandler.HTTPGet.Scheme)
 
-	s.Require().Equal("/readiness", *&deployment.Spec.Template.Spec.Containers[0].ReadinessProbe.Handler.HTTPGet.Path)
-	s.Require().Equal(int(9000), deployment.Spec.Template.Spec.Containers[0].ReadinessProbe.Handler.HTTPGet.Port.IntValue())
-	s.Require().Equal(corev1.URISchemeHTTPS, *&deployment.Spec.Template.Spec.Containers[0].ReadinessProbe.Handler.HTTPGet.Scheme)
+	s.Require().Equal("/readiness", deployment.Spec.Template.Spec.Containers[0].ReadinessProbe.ProbeHandler.HTTPGet.Path)
+	s.Require().Equal(int(9000), deployment.Spec.Template.Spec.Containers[0].ReadinessProbe.ProbeHandler.HTTPGet.Port.IntValue())
+	s.Require().Equal(corev1.URISchemeHTTPS, deployment.Spec.Template.Spec.Containers[0].ReadinessProbe.ProbeHandler.HTTPGet.Scheme)
 
 }
 
@@ -376,4 +375,60 @@ func (s *TemplateTest) TestPodSecurityContextTakesPrecendenceOverDeprecatedOptio
 	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
 
 	s.Require().Equal(int64(2000), *deployment.Spec.Template.Spec.SecurityContext.RunAsUser)
+}
+
+func (s *TemplateTest) TestCanSetSingleTopologySpreadConstraint() {
+	options := &helm.Options{
+		SetValues: map[string]string{
+			"pod.topologySpreadConstraints[0].maxSkew":           "1",
+			"pod.topologySpreadConstraints[0].topologyKey":       "topology.kubernetes.io/zone",
+			"pod.topologySpreadConstraints[0].whenUnsatisfiable": "DoNotSchedule",
+		},
+		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
+	}
+
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/deployment.yaml"})
+	var deployment appsv1.Deployment
+	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
+
+	s.Require().Equal(int32(1), deployment.Spec.Template.Spec.TopologySpreadConstraints[0].MaxSkew)
+	s.Require().Equal("topology.kubernetes.io/zone", deployment.Spec.Template.Spec.TopologySpreadConstraints[0].TopologyKey)
+	s.Require().Equal(corev1.UnsatisfiableConstraintAction("DoNotSchedule"), deployment.Spec.Template.Spec.TopologySpreadConstraints[0].WhenUnsatisfiable)
+	s.Require().Equal("ld-relay", deployment.Spec.Template.Spec.TopologySpreadConstraints[0].LabelSelector.MatchLabels["app.kubernetes.io/name"])
+	s.Require().Equal("ld-relay-test", deployment.Spec.Template.Spec.TopologySpreadConstraints[0].LabelSelector.MatchLabels["app.kubernetes.io/instance"])
+}
+
+func (s *TemplateTest) TestCanSetMultipleTopologySpreadConstraints() {
+	options := &helm.Options{
+		SetValues: map[string]string{
+			"pod.topologySpreadConstraints[0].maxSkew":                                "1",
+			"pod.topologySpreadConstraints[0].topologyKey":                            "topology.kubernetes.io/zone",
+			"pod.topologySpreadConstraints[0].whenUnsatisfiable":                      "DoNotSchedule",
+			"pod.topologySpreadConstraints[1].maxSkew":                                "1",
+			"pod.topologySpreadConstraints[1].topologyKey":                            "topology.kubernetes.io/region",
+			"pod.topologySpreadConstraints[1].whenUnsatisfiable":                      "ScheduleAnyway",
+			"pod.topologySpreadConstraints[1].labelSelector.matchLabels.first-label":  "example-first-label",
+			"pod.topologySpreadConstraints[1].labelSelector.matchLabels.second-label": "example-second-label",
+		},
+		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
+	}
+
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/deployment.yaml"})
+	var deployment appsv1.Deployment
+	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
+
+	s.Require().Equal(int32(1), deployment.Spec.Template.Spec.TopologySpreadConstraints[0].MaxSkew)
+	s.Require().Equal("topology.kubernetes.io/zone", deployment.Spec.Template.Spec.TopologySpreadConstraints[0].TopologyKey)
+	s.Require().Equal(corev1.UnsatisfiableConstraintAction("DoNotSchedule"), deployment.Spec.Template.Spec.TopologySpreadConstraints[0].WhenUnsatisfiable)
+	s.Require().Equal("topology.kubernetes.io/zone", deployment.Spec.Template.Spec.TopologySpreadConstraints[0].TopologyKey)
+	s.Require().Equal("ld-relay", deployment.Spec.Template.Spec.TopologySpreadConstraints[0].LabelSelector.MatchLabels["app.kubernetes.io/name"])
+	s.Require().Equal("ld-relay-test", deployment.Spec.Template.Spec.TopologySpreadConstraints[0].LabelSelector.MatchLabels["app.kubernetes.io/instance"])
+
+	s.Require().Equal(int32(1), deployment.Spec.Template.Spec.TopologySpreadConstraints[1].MaxSkew)
+	s.Require().Equal("topology.kubernetes.io/region", deployment.Spec.Template.Spec.TopologySpreadConstraints[1].TopologyKey)
+	s.Require().Equal(corev1.UnsatisfiableConstraintAction("ScheduleAnyway"), deployment.Spec.Template.Spec.TopologySpreadConstraints[1].WhenUnsatisfiable)
+	s.Require().Equal("example-first-label", deployment.Spec.Template.Spec.TopologySpreadConstraints[1].LabelSelector.MatchLabels["first-label"])
+	s.Require().Equal("example-second-label", deployment.Spec.Template.Spec.TopologySpreadConstraints[1].LabelSelector.MatchLabels["second-label"])
+	s.Require().Empty(deployment.Spec.Template.Spec.TopologySpreadConstraints[1].LabelSelector.MatchLabels["app.kubernetes.io/name"])
+	s.Require().Empty(deployment.Spec.Template.Spec.TopologySpreadConstraints[1].LabelSelector.MatchLabels["app.kubernetes.io/instance"])
 }

@@ -32,6 +32,22 @@ pod:
   # Security context applied to the pod. If provided, will take precedence over podSecurityContext
   securityContext: {}
     # fsGroup: 2000
+  distruptionBudget:
+    # Specifies whether a pdb should be created
+    enabled: false
+    # Number of pods that are available after eviction as number or percentage (eg.: 50% or 2)
+    ## Defaults to 0 if not specified
+    minAvailable: ""
+    # Number of pods that are unavailable after eviction as number or percentage (eg.: 50% or 2).
+    # Only one of (minavailable or maxUnavailable) can be specificed.
+    # Has higher precedence over `podDisruptionBudget.minAvailable`
+    maxUnavailable: ""
+  # Adds topology spread constraints to the relay deployment
+  ## If labelSelector is left out, it will default to the labelSelector configuration of the deployment(Recommended)
+  topologySpreadConstraints: []
+  # - maxSkew: 1
+  #   topologyKey: topology.kubernetes.io/zone
+  #   whenUnsatisfiable: DoNotSchedule
 
 # Deprecated: Use pod.annotations instead
 podAnnotations: {}

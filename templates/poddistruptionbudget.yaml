@@ -1,0 +1,21 @@
+{{- if .Values.pod.distruptionBudget.enabled -}}
+{{- if semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion -}}
+apiVersion: policy/v1
+{{- else -}}
+apiVersion: policy/v1beta1
+{{- end }}
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "ld-relay.fullname" . }}
+  labels:
+    {{- include "ld-relay.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "ld-relay.selectorLabels" . | nindent 6 }}
+  {{- with .Values.pod.distruptionBudget.maxUnavailable }}
+  maxUnavailable: {{ . }}
+  {{- else }}
+  minAvailable: {{ .Values.pod.distruptionBudget.minAvailable | default 0 }}
+  {{- end }}
+{{- end -}}
