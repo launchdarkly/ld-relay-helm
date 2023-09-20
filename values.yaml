@@ -188,10 +188,15 @@ relay:
       path: /status
       port: api
   readinessProbe:
-      httpGet:
-        path: /status
-        port: api
-
+    httpGet: null
+    failureThreshold: 1
+    exec:
+      command:
+        - sh
+        - -c
+        - >-
+          curl -s -X GET "http://127.0.0.1:8030/status" |
+          grep -q healthy
 
   # Enables mounting a k8s volume onto the relay container.
   #
