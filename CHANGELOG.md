@@ -4,6 +4,14 @@ Change log
 All notable changes to the LaunchDarkly Relay Proxy Helm Chart will be documented in this file. This project adheres to [Semantic Versioning](https://semver.org).
 
 
+## [3.0.0] - 2023-10-25
+### Changed:
+- Updated the default relay image to v8.2.0. To learn more about the changes involved, read [the Relay Changelog](https://github.com/launchdarkly/ld-relay/blob/v8/CHANGELOG.md).
+
+### Removed:
+- Removed previously deprecated config option `podAnnotations`. Use `pod.annotations` instead.
+- Removed previously deprecated config option `podSecurityContext`. Use `pod.securityContext` instead.
+
 ## [2.4.0] - 2023-07-20
 ### Added:
 - Support TopologySpreadConstraint and PodDistruptionBudget. (Thanks, [pjaak](https://github.com/launchdarkly/ld-relay-helm/pull/47)!)
