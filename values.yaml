@@ -25,11 +25,11 @@ serviceAccount:
   name: ""
 
 pod:
-  # Annotations to add to the pod. If provided, will take precedence over podAnnotations
+  # Annotations to add to the pod.
   annotations: {}
   # Labels to add to the pod.
   labels: {}
-  # Security context applied to the pod. If provided, will take precedence over podSecurityContext
+  # Security context applied to the pod.
   securityContext: {}
     # fsGroup: 2000
   distruptionBudget:
@@ -48,13 +48,6 @@ pod:
   # - maxSkew: 1
   #   topologyKey: topology.kubernetes.io/zone
   #   whenUnsatisfiable: DoNotSchedule
-
-# Deprecated: Use pod.annotations instead
-podAnnotations: {}
-
-# Deprecated: Use pod.securityContext instead
-podSecurityContext: {}
-  # fsGroup: 2000
 
 securityContext: {}
   # capabilities:

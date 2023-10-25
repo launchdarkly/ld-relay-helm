@@ -29,8 +29,6 @@ spec:
       
       
       serviceAccountName: ld-relay-test
-      securityContext:
-        {}
       containers:
         - name: ld-relay
 

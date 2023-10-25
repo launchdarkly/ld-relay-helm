@@ -214,39 +214,6 @@ func (s *TemplateTest) TestCanSetPodAnnotations() {
 	s.Require().Equal("example-value-two", deployment.Spec.Template.Annotations["second-annotation"])
 }
 
-func (s *TemplateTest) TestCanSetDeprecatedPodAnnotations() {
-	options := &helm.Options{
-		SetValues: map[string]string{
-			"podAnnotations.first-annotation":  "example-value-one",
-			"podAnnotations.second-annotation": "example-value-two",
-		},
-		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
-	}
-
-	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/deployment.yaml"})
-	var deployment appsv1.Deployment
-	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
-
-	s.Require().Equal("example-value-one", deployment.Spec.Template.Annotations["first-annotation"])
-	s.Require().Equal("example-value-two", deployment.Spec.Template.Annotations["second-annotation"])
-}
-
-func (s *TemplateTest) TestPodAnnotationsTakesPrecendenceOverDeprecatedOption() {
-	options := &helm.Options{
-		SetValues: map[string]string{
-			"podAnnotations.testing-annotation":  "legacy",
-			"pod.annotations.testing-annotation": "new",
-		},
-		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
-	}
-
-	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/deployment.yaml"})
-	var deployment appsv1.Deployment
-	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
-
-	s.Require().Equal("new", deployment.Spec.Template.Annotations["testing-annotation"])
-}
-
 func (s *TemplateTest) TestCanSetPodLabels() {
 	options := &helm.Options{
 		SetValues: map[string]string{
@@ -342,39 +309,6 @@ func (s *TemplateTest) TestCanDisableProbes() {
 
 	s.Require().Nil(deployment.Spec.Template.Spec.Containers[0].LivenessProbe)
 	s.Require().Nil(deployment.Spec.Template.Spec.Containers[0].ReadinessProbe)
-}
-
-func (s *TemplateTest) TestCanSetDeprecatedPodSecurityContext() {
-	options := &helm.Options{
-		SetValues: map[string]string{
-			"podSecurityContext.runAsUser":  "1000",
-			"podSecurityContext.runAsGroup": "2000",
-		},
-		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
-	}
-
-	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/deployment.yaml"})
-	var deployment appsv1.Deployment
-	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
-
-	s.Require().Equal(int64(1000), *deployment.Spec.Template.Spec.SecurityContext.RunAsUser)
-	s.Require().Equal(int64(2000), *deployment.Spec.Template.Spec.SecurityContext.RunAsGroup)
-}
-
-func (s *TemplateTest) TestPodSecurityContextTakesPrecendenceOverDeprecatedOption() {
-	options := &helm.Options{
-		SetValues: map[string]string{
-			"podSecurityContext.runAsUser":  "1000",
-			"pod.securityContext.runAsUser": "2000",
-		},
-		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
-	}
-
-	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/deployment.yaml"})
-	var deployment appsv1.Deployment
-	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
-
-	s.Require().Equal(int64(2000), *deployment.Spec.Template.Spec.SecurityContext.RunAsUser)
 }
 
 func (s *TemplateTest) TestCanSetSingleTopologySpreadConstraint() {

@@ -15,14 +15,8 @@ spec:
     metadata:
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/config.yaml") . | sha256sum }}
-      {{- if .Values.pod.annotations }}
-        {{- with .Values.pod.annotations }}
-          {{- toYaml . | nindent 8 }}
-        {{- end }}
-      {{- else }}
-        {{- with .Values.podAnnotations }}
-          {{- toYaml . | nindent 8 }}
-        {{- end }}
+      {{- with .Values.pod.annotations }}
+        {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
         {{- include "ld-relay.selectorLabels" . | nindent 8 }}
@@ -67,12 +61,10 @@ spec:
             {{- end }}
       {{- end }}
       serviceAccountName: {{ include "ld-relay.serviceAccountName" . }}
+      {{- with .Values.pod.securityContext }}
       securityContext:
-        {{- if .Values.pod.securityContext }}
-          {{- toYaml .Values.pod.securityContext | nindent 8 }}
-        {{- else }}
-          {{- toYaml .Values.podSecurityContext | nindent 8 }}
-        {{- end }}
+          {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           {{- if $has_volumes }}
