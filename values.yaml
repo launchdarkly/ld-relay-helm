@@ -31,6 +31,8 @@ pod:
   labels: {}
   # Security context applied to the pod.
   securityContext: {}
+  # PriorityClassName to apply to the pod.
+  priorityClassName: ""
     # fsGroup: 2000
   distruptionBudget:
     # Specifies whether a pdb should be created
