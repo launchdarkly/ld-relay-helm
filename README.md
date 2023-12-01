@@ -80,6 +80,7 @@ Here's a summary of the available configuration options:
 | pod.distruptionBudget.minAvailable            | string  | `""`                                                         | Minimum number of pods that are available after eviction as number or percentage                         |
 | pod.distruptionBudget.maxUnavailable          | string  | `""`                                                         | Maximum number of pods that are unavailable after eviction as number or percentage                       |
 | pod.topologySpreadConstraints                 | array   | `[]`                                                         | Specify the topology spread constrait definitions to apply to the relay deployment                       |
+| pod.priorityClassName                         | string  | `""`                                                         | Specify a PriorityClass for the pod                                                                      |
 
 ## Learn more
 

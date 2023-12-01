@@ -366,3 +366,32 @@ func (s *TemplateTest) TestCanSetMultipleTopologySpreadConstraints() {
 	s.Require().Empty(deployment.Spec.Template.Spec.TopologySpreadConstraints[1].LabelSelector.MatchLabels["app.kubernetes.io/name"])
 	s.Require().Empty(deployment.Spec.Template.Spec.TopologySpreadConstraints[1].LabelSelector.MatchLabels["app.kubernetes.io/instance"])
 }
+
+func (s *TemplateTest) TestCanSetPriorityClassName() {
+	options := &helm.Options{
+		SetValues: map[string]string{
+			"pod.priorityClassName": "high-priority",
+		},
+		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
+	}
+
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/deployment.yaml"})
+	var deployment appsv1.Deployment
+	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
+
+	s.Require().Equal("high-priority", deployment.Spec.Template.Spec.PriorityClassName)
+	s.Require().Len(deployment.Spec.Template.Spec.Containers[0].EnvFrom, 1)
+}
+
+func (s *TemplateTest) TestNotSetPriorityClassName() {
+	options := &helm.Options{
+		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
+	}
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/deployment.yaml"})
+	var deployment appsv1.Deployment
+
+	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
+
+	s.Require().Empty(deployment.Spec.Template.Spec.PriorityClassName)
+	s.Require().Len(deployment.Spec.Template.Spec.Containers[0].EnvFrom, 1)
+}
