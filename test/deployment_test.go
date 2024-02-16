@@ -395,3 +395,15 @@ func (s *TemplateTest) TestNotSetPriorityClassName() {
 	s.Require().Empty(deployment.Spec.Template.Spec.PriorityClassName)
 	s.Require().Len(deployment.Spec.Template.Spec.Containers[0].EnvFrom, 1)
 }
+
+func (s *TemplateTest) TestNotSetLifecycleHooks() {
+	options := &helm.Options{
+		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
+	}
+
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/deployment.yaml"})
+	var deployment appsv1.Deployment
+	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
+
+	s.Require().Empty(deployment.Spec.Template.Spec.Containers[0].Lifecycle)
+}

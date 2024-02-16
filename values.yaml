@@ -186,6 +186,14 @@ relay:
       httpGet:
         path: /status
         port: api
+  
+  lifecycle: []
+    # preStop:
+    #   exec:
+    #     command:
+    #       - sh
+    #       - -c
+    #       - sleep 60
 
 
   # Enables mounting a k8s volume onto the relay container.
