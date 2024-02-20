@@ -186,7 +186,7 @@ relay:
       httpGet:
         path: /status
         port: api
-  
+
   lifecycle: []
     # preStop:
     #   exec:
