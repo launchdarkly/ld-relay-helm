@@ -395,3 +395,32 @@ func (s *TemplateTest) TestNotSetPriorityClassName() {
 	s.Require().Empty(deployment.Spec.Template.Spec.PriorityClassName)
 	s.Require().Len(deployment.Spec.Template.Spec.Containers[0].EnvFrom, 1)
 }
+
+func (s *TemplateTest) TestLifecycleHooksDefaultToEmpty() {
+	options := &helm.Options{
+		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
+	}
+
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/deployment.yaml"})
+	var deployment appsv1.Deployment
+	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
+
+	s.Require().Empty(deployment.Spec.Template.Spec.Containers[0].Lifecycle)
+}
+
+func (s *TemplateTest) TestCanSetLifecycleHooks() {
+	options := &helm.Options{
+		SetValues: map[string]string{
+			"relay.lifecycle.preStop.exec.command": "{sh,-c,sleep 60}",
+		},
+		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
+	}
+
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/deployment.yaml"})
+	var deployment appsv1.Deployment
+	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
+
+	s.Require().Equal("sh", deployment.Spec.Template.Spec.Containers[0].Lifecycle.PreStop.Exec.Command[0])
+	s.Require().Equal("-c", deployment.Spec.Template.Spec.Containers[0].Lifecycle.PreStop.Exec.Command[1])
+	s.Require().Equal("sleep 60", deployment.Spec.Template.Spec.Containers[0].Lifecycle.PreStop.Exec.Command[2])
+}

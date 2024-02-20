@@ -112,7 +112,10 @@ spec:
             {{- end }}
             - configMapRef:
                 name: {{ include "ld-relay.name" . }}-config
-
+          {{- with .Values.relay.lifecycle }}
+          lifecycle:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
