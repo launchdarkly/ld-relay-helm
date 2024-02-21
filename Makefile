@@ -21,6 +21,10 @@ unittest: #! Run the unit tests
 lint: #! Run helm lint against this chart
 	@helm lint
 
+.PHONY: package
+package: #! Build the helm package (e.g. ld-relay-x.y.z.tgz)
+	@helm package .
+
 .PHONY: update-golden-files
 update-golden-files: #! Update unit test golden files (WARNING: Will change your local fs)
 	@go test ./test -update-golden=true
