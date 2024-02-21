@@ -4,6 +4,10 @@ Change log
 All notable changes to the LaunchDarkly Relay Proxy Helm Chart will be documented in this file. This project adheres to [Semantic Versioning](https://semver.org).
 
 
+## [3.2.0] - 2024-02-21
+### Added:
+- Add support for container lifecycle hooks. (Thanks, [Helinanu](https://github.com/launchdarkly/ld-relay-helm/pull/57)!)
+
 ## [3.1.0] - 2023-12-01
 ### Added:
 - Support setting a pod's priority class name. (Thanks, [kh3dron](https://github.com/launchdarkly/ld-relay-helm/pull/53)!)
