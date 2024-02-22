@@ -1,0 +1,15 @@
+name: Quality control
+description: 'Run quality control checks'
+
+runs:
+  using: composite
+  steps:
+    - name: Run tests against chart
+      shell: bash
+      run: make test
+
+    - name: Ensure golden files are up-to-date
+      shell: bash
+      run: |
+        make update-golden-files
+        [[ -z $(git status --porcelain) ]]

@@ -1,0 +1,22 @@
+name: Quality control
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - '**.md' # Do not need to run CI for markdown changes.
+  pull_request:
+    branches: [ main ]
+    paths-ignore:
+      - '**.md'
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-helm@v4.0.0
+
+      - name: Run quality control checks
+        uses: ./.github/actions/ci

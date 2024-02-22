@@ -1,0 +1,51 @@
+name: Publish Chart
+description: 'Publish to gh-pages-backed chart repository'
+inputs:
+  dry_run:
+    description: 'Is this a dry run. If so no package will be published.'
+    required: true
+  token:
+    description: 'The GitHub token used to upload artifacts to the published release'
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@v4
+      with:
+        ref: gh-pages
+        path: helm-repo
+
+    - name: Determine chart version
+      shell: bash
+      id: version
+      run: |
+        version=$(helm show chart . | awk '/version/ { print $2 }')
+        echo "CHART_VERSION=$version" >> "$GITHUB_OUTPUT"
+        echo "ARTIFACT=ld-relay-$version.tgz" >> "$GITHUB_OUTPUT"
+
+    - name: Package the helm chart
+      shell: bash
+      run: make package
+
+    - name: Generate updated index.yaml
+      shell: bash
+      run: helm repo index . --url https://launchdarkly.github.io/ld-relay-helm --merge helm-repo/index.yaml
+
+    - name: Move files into publishable directory
+      shell: bash
+      run: mv ${{ steps.version.outputs.ARTIFACT }} index.yaml helm-repo
+
+    - name: Publish to GitHub pages
+      if: ${{ inputs.dry_run == 'false' }}
+      uses: launchdarkly/gh-actions/actions/publish-pages@publish-pages-v1.0.1
+      with:
+        docs_path: helm-repo
+        github_token: ${{ inputs.token }}
+
+    - name: Attach published chart to release
+      if: ${{ inputs.dry_run == 'false' }}
+      shell: bash
+      run: gh release upload ${{ steps.version.outputs.CHART_VERSION }} helm-repo/${{ steps.version.outputs.ARTIFACT }} --clobber
+      env:
+        GH_TOKEN: ${{ inputs.token }}

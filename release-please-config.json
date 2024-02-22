@@ -1,0 +1,10 @@
+{
+  "packages": {
+    ".": {
+      "release-type": "helm",
+      "versioning": "default",
+      "include-v-in-tag": false,
+      "include-component-in-tag": false
+    }
+  }
+}
