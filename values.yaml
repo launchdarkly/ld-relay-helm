@@ -51,6 +51,8 @@ pod:
   #   topologyKey: topology.kubernetes.io/zone
   #   whenUnsatisfiable: DoNotSchedule
 
+# terminationGracePeriodSeconds: 90
+
 securityContext: {}
   # capabilities:
   #   drop:
