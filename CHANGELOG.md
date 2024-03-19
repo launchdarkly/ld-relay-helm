@@ -4,6 +4,13 @@ Change log
 All notable changes to the LaunchDarkly Relay Proxy Helm Chart will be documented in this file. This project adheres to [Semantic Versioning](https://semver.org).
 
 
+## [3.3.0](https://github.com/launchdarkly/ld-relay-helm/compare/3.2.0...3.3.0) (2024-03-19)
+
+
+### Features
+
+* Add option to define terminationGracePeriodSeconds ([#60](https://github.com/launchdarkly/ld-relay-helm/issues/60)) ([f65b60b](https://github.com/launchdarkly/ld-relay-helm/commit/f65b60b0cc0f1f956e3a951042095583e85cd542))
+
 ## [3.2.0] - 2024-02-21
 ### Added:
 - Add support for container lifecycle hooks. (Thanks, [Helinanu](https://github.com/launchdarkly/ld-relay-helm/pull/57)!)
