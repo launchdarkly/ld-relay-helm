@@ -35,7 +35,7 @@ entries:
     - https://github.com/launchdarkly/ld-relay
     type: application
     urls:
-    - https://launchdarkly.github.io/ld-relay-helm/helm-repo/ld-relay-3.2.0.tgz
+    - https://launchdarkly.github.io/ld-relay-helm/ld-relay-3.2.0.tgz
     version: 3.2.0
   - apiVersion: v2
     appVersion: 8.2.0
@@ -53,7 +53,7 @@ entries:
     - https://github.com/launchdarkly/ld-relay
     type: application
     urls:
-    - https://launchdarkly.github.io/ld-relay-helm/helm-repo/ld-relay-3.1.0.tgz
+    - https://launchdarkly.github.io/ld-relay-helm/ld-relay-3.1.0.tgz
     version: 3.1.0
   - apiVersion: v2
     appVersion: 8.2.0
@@ -71,7 +71,7 @@ entries:
     - https://github.com/launchdarkly/ld-relay
     type: application
     urls:
-    - https://launchdarkly.github.io/ld-relay-helm/helm-repo/ld-relay-3.0.0.tgz
+    - https://launchdarkly.github.io/ld-relay-helm/ld-relay-3.0.0.tgz
     version: 3.0.0
   - apiVersion: v2
     appVersion: 7.2.1
@@ -89,7 +89,7 @@ entries:
     - https://github.com/launchdarkly/ld-relay
     type: application
     urls:
-    - https://launchdarkly.github.io/ld-relay-helm/helm-repo/ld-relay-2.4.0.tgz
+    - https://launchdarkly.github.io/ld-relay-helm/ld-relay-2.4.0.tgz
     version: 2.4.0
   - apiVersion: v2
     appVersion: 7.2.1
@@ -107,7 +107,7 @@ entries:
     - https://github.com/launchdarkly/ld-relay
     type: application
     urls:
-    - https://launchdarkly.github.io/ld-relay-helm/helm-repo/ld-relay-2.3.0.tgz
+    - https://launchdarkly.github.io/ld-relay-helm/ld-relay-2.3.0.tgz
     version: 2.3.0
   - apiVersion: v2
     appVersion: 7.2.1
@@ -125,7 +125,7 @@ entries:
     - https://github.com/launchdarkly/ld-relay
     type: application
     urls:
-    - https://launchdarkly.github.io/ld-relay-helm/helm-repo/ld-relay-2.2.2.tgz
+    - https://launchdarkly.github.io/ld-relay-helm/ld-relay-2.2.2.tgz
     version: 2.2.2
   - apiVersion: v2
     appVersion: 7.2.1
@@ -143,7 +143,7 @@ entries:
     - https://github.com/launchdarkly/ld-relay
     type: application
     urls:
-    - https://launchdarkly.github.io/ld-relay-helm/helm-repo/ld-relay-2.2.1.tgz
+    - https://launchdarkly.github.io/ld-relay-helm/ld-relay-2.2.1.tgz
     version: 2.2.1
   - apiVersion: v2
     appVersion: 7.2.1
@@ -161,7 +161,7 @@ entries:
     - https://github.com/launchdarkly/ld-relay
     type: application
     urls:
-    - https://launchdarkly.github.io/ld-relay-helm/helm-repo/ld-relay-2.2.0.tgz
+    - https://launchdarkly.github.io/ld-relay-helm/ld-relay-2.2.0.tgz
     version: 2.2.0
   - apiVersion: v2
     appVersion: 7.2.1
@@ -179,7 +179,7 @@ entries:
     - https://github.com/launchdarkly/ld-relay
     type: application
     urls:
-    - https://launchdarkly.github.io/ld-relay-helm/helm-repo/ld-relay-2.1.0.tgz
+    - https://launchdarkly.github.io/ld-relay-helm/ld-relay-2.1.0.tgz
     version: 2.1.0
   - apiVersion: v2
     appVersion: 7.2.1
@@ -197,7 +197,7 @@ entries:
     - https://github.com/launchdarkly/ld-relay
     type: application
     urls:
-    - https://launchdarkly.github.io/ld-relay-helm/helm-repo/ld-relay-2.0.0.tgz
+    - https://launchdarkly.github.io/ld-relay-helm/ld-relay-2.0.0.tgz
     version: 2.0.0
   - apiVersion: v2
     appVersion: 6.7.12
@@ -215,7 +215,7 @@ entries:
     - https://github.com/launchdarkly/ld-relay
     type: application
     urls:
-    - https://launchdarkly.github.io/ld-relay-helm/helm-repo/ld-relay-1.2.1.tgz
+    - https://launchdarkly.github.io/ld-relay-helm/ld-relay-1.2.1.tgz
     version: 1.2.1
   - apiVersion: v2
     appVersion: 6.7.12
@@ -233,7 +233,7 @@ entries:
     - https://github.com/launchdarkly/ld-relay
     type: application
     urls:
-    - https://launchdarkly.github.io/ld-relay-helm/helm-repo/ld-relay-1.2.0.tgz
+    - https://launchdarkly.github.io/ld-relay-helm/ld-relay-1.2.0.tgz
     version: 1.2.0
   - apiVersion: v2
     appVersion: 6.7.12
@@ -251,7 +251,7 @@ entries:
     - https://github.com/launchdarkly/ld-relay
     type: application
     urls:
-    - https://launchdarkly.github.io/ld-relay-helm/helm-repo/ld-relay-1.1.0.tgz
+    - https://launchdarkly.github.io/ld-relay-helm/ld-relay-1.1.0.tgz
     version: 1.1.0
   - apiVersion: v2
     appVersion: 6.7.12
@@ -269,7 +269,7 @@ entries:
     - https://github.com/launchdarkly/ld-relay
     type: application
     urls:
-    - https://launchdarkly.github.io/ld-relay-helm/helm-repo/ld-relay-1.0.1.tgz
+    - https://launchdarkly.github.io/ld-relay-helm/ld-relay-1.0.1.tgz
     version: 1.0.1
   - apiVersion: v2
     appVersion: 6.7.12
@@ -287,6 +287,6 @@ entries:
     - https://github.com/launchdarkly/ld-relay
     type: application
     urls:
-    - https://launchdarkly.github.io/ld-relay-helm/helm-repo/ld-relay-1.0.0.tgz
+    - https://launchdarkly.github.io/ld-relay-helm/ld-relay-1.0.0.tgz
     version: 1.0.0
 generated: "2024-03-19T13:19:28.795104727Z"
