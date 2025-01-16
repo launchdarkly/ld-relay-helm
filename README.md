@@ -1,5 +1,6 @@
 # LaunchDarkly Relay Proxy Helm Chart
 
+[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/ld-relay)](https://artifacthub.io/packages/search?repo=ld-relay)
 [![Quality control](https://github.com/launchdarkly/ld-relay-helm/actions/workflows/ci.yml/badge.svg)](https://github.com/launchdarkly/ld-relay-helm/actions/workflows/ci.yml)
 
 A Helm chart to ease deployment of the [LaunchDarkly Relay Proxy](https://github.com/launchdarkly/ld-relay) to Kubernetes (k8s).
