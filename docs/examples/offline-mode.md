@@ -4,11 +4,12 @@
 
 Enabling offline mode on the Relay Proxy lets you run the Relay Proxy without ever connecting it to LaunchDarkly. Instead of retrieving flag and segment values from LaunchDarkly's servers, the Relay Proxy gets them from files located on your local host or filesystem.
 
-When using this Helm chart, the offline file needs to exist in a Kubernetes volume which is mounted to the Relay Proxy container. The example below uses [minikube] and a [local volume mount][local-volume].
+When using this Helm chart, the offline file needs to exist in a Kubernetes volume which is mounted to the Relay Proxy container. This volume can be created using a [local volume mount][local-volume] or a [ConfigMap][configmap].
 
-Here's how to enable offline mode when using the Helm chart:
+To get started, create a Relay Proxy configuration from the [Relay proxy tab][proxy-tab] of the Account settings page in the LaunchDarkly user interface, and save its unique key. Then follow the instructions below to set up the Relay Proxy in offline mode.
 
-1. Create a Relay Proxy configuration from the [Relay proxy tab][proxy-tab] of the Account settings page in the LaunchDarkly user interface, and save its unique key.
+## From a local volume
+
 2. A local volume requires a file on the minikube host. Connect to minikube and download a local copy of the flag and segment data using the key from the previous step.
 
     ```shell
@@ -66,7 +67,7 @@ Here's how to enable offline mode when using the Helm chart:
       volume:
         # This filename should match the path of the file in the volume used in the
         # below claim.
-        offline: relay-file.tar.gz
+        offline: EXAMPLE-NAME-OF-OUTPUTTED-FILE.tar.gz
         definition:
           persistentVolumeClaim:
             claimName: offline-volume-claim
@@ -77,6 +78,40 @@ Here's how to enable offline mode when using the Helm chart:
     ```shell
     helm install relay --values ./values.yaml launchdarkly-ld-relay/ld-relay
     ```
+
+## Using a ConfigMap
+
+2. Download a local copy of the flag and segment data using the key from the previous step. Note that unlike with local volumes, this can be done from your local machine.
+
+    ```shell
+    $ curl https://sdk.launchdarkly.com/relay/latest-all \
+      -H "Authorization: rel-EXAMPLE-RELAY-PROXY-CONFIGURATION-KEY" \
+      -o EXAMPLE-NAME-OF-OUTPUTTED-FILE.tar.gz
+    ```
+3. Create a configmap from this file.
+
+    ```shell
+    kubectl create configmap offline-configmap --from-file=EXAMPLE-NAME-OF-OUTPUTTED-FILE.tar.gz
+    ```
+
+4. Configure `values.yaml` to reference this configmap.
+
+    ```yaml
+    # values.yaml
+    relay:
+        volume:
+            offline: EXAMPLE-NAME-OF-OUTPUTTED-FILE.tar.gz
+            definition:
+                configMap:
+                    name: offline-configmap
+    ```
+
+5. Install the Helm chart, referencing your updated values configuration file.
+
+    ```shell
+    helm install relay --values ./values.yaml launchdarkly-ld-relay/ld-relay
+    ```
+
 
 Success! Now you should have a working installation of the Relay Proxy, initially configured directly from your pre-downloaded offline file.
 
