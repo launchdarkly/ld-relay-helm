@@ -1,4 +1,4 @@
-{{- if .Values.pod.distruptionBudget.enabled -}}
+{{- if .Values.pod.disruptionBudget.enabled -}}
 {{- if semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion -}}
 apiVersion: policy/v1
 {{- else -}}
@@ -13,9 +13,9 @@ spec:
   selector:
     matchLabels:
       {{- include "ld-relay.selectorLabels" . | nindent 6 }}
-  {{- with .Values.pod.distruptionBudget.maxUnavailable }}
+  {{- with .Values.pod.disruptionBudget.maxUnavailable }}
   maxUnavailable: {{ . }}
   {{- else }}
-  minAvailable: {{ .Values.pod.distruptionBudget.minAvailable | default 0 }}
+  minAvailable: {{ .Values.pod.disruptionBudget.minAvailable | default 0 }}
   {{- end }}
 {{- end -}}

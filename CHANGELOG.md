@@ -36,7 +36,7 @@ All notable changes to the LaunchDarkly Relay Proxy Helm Chart will be documente
 
 ## [2.4.0] - 2023-07-20
 ### Added:
-- Support TopologySpreadConstraint and PodDistruptionBudget. (Thanks, [pjaak](https://github.com/launchdarkly/ld-relay-helm/pull/47)!)
+- Support TopologySpreadConstraint and PodDisruptionBudget. (Thanks, [pjaak](https://github.com/launchdarkly/ld-relay-helm/pull/47)!)
 
 ## [2.3.0] - 2023-07-04
 ### Added:

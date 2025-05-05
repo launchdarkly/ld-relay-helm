@@ -34,7 +34,7 @@ pod:
     # fsGroup: 2000
   # PriorityClassName to apply to the pod.
   priorityClassName: ""
-  distruptionBudget:
+  disruptionBudget:
     # Specifies whether a pdb should be created
     enabled: false
     # Number of pods that are available after eviction as number or percentage (eg.: 50% or 2)

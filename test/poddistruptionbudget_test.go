@@ -9,12 +9,12 @@ import (
 func (s *TemplateTest) TestCanEnablePDB() {
 	options := &helm.Options{
 		SetValues: map[string]string{
-			"pod.distruptionBudget.enabled": "true",
+			"pod.disruptionBudget.enabled": "true",
 		},
 		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
 	}
 
-	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/poddistruptionbudget.yaml"})
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/poddisruptionbudget.yaml"})
 	var pdb policyv1.PodDisruptionBudget
 	helm.UnmarshalK8SYaml(s.T(), output, &pdb)
 
@@ -24,13 +24,13 @@ func (s *TemplateTest) TestCanEnablePDB() {
 func (s *TemplateTest) TestCanChangePDBMaxUnavailableNumber() {
 	options := &helm.Options{
 		SetValues: map[string]string{
-			"pod.distruptionBudget.enabled":        "true",
-			"pod.distruptionBudget.maxUnavailable": "2",
+			"pod.disruptionBudget.enabled":        "true",
+			"pod.disruptionBudget.maxUnavailable": "2",
 		},
 		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
 	}
 
-	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/poddistruptionbudget.yaml"})
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/poddisruptionbudget.yaml"})
 	var pdb policyv1.PodDisruptionBudget
 	helm.UnmarshalK8SYaml(s.T(), output, &pdb)
 
@@ -40,13 +40,13 @@ func (s *TemplateTest) TestCanChangePDBMaxUnavailableNumber() {
 func (s *TemplateTest) TestCanChangePDBMaxUnavailablePercent() {
 	options := &helm.Options{
 		SetValues: map[string]string{
-			"pod.distruptionBudget.enabled":        "true",
-			"pod.distruptionBudget.maxUnavailable": "50%",
+			"pod.disruptionBudget.enabled":        "true",
+			"pod.disruptionBudget.maxUnavailable": "50%",
 		},
 		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
 	}
 
-	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/poddistruptionbudget.yaml"})
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/poddisruptionbudget.yaml"})
 	var pdb policyv1.PodDisruptionBudget
 	helm.UnmarshalK8SYaml(s.T(), output, &pdb)
 
@@ -56,13 +56,13 @@ func (s *TemplateTest) TestCanChangePDBMaxUnavailablePercent() {
 func (s *TemplateTest) TestCanChangePDBMinAvailableNumber() {
 	options := &helm.Options{
 		SetValues: map[string]string{
-			"pod.distruptionBudget.enabled":      "true",
-			"pod.distruptionBudget.minAvailable": "2",
+			"pod.disruptionBudget.enabled":      "true",
+			"pod.disruptionBudget.minAvailable": "2",
 		},
 		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
 	}
 
-	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/poddistruptionbudget.yaml"})
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/poddisruptionbudget.yaml"})
 	var pdb policyv1.PodDisruptionBudget
 	helm.UnmarshalK8SYaml(s.T(), output, &pdb)
 
@@ -72,13 +72,13 @@ func (s *TemplateTest) TestCanChangePDBMinAvailableNumber() {
 func (s *TemplateTest) TestCanChangePDBMinAvailablePercent() {
 	options := &helm.Options{
 		SetValues: map[string]string{
-			"pod.distruptionBudget.enabled":      "true",
-			"pod.distruptionBudget.minAvailable": "50%",
+			"pod.disruptionBudget.enabled":      "true",
+			"pod.disruptionBudget.minAvailable": "50%",
 		},
 		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
 	}
 
-	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/poddistruptionbudget.yaml"})
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/poddisruptionbudget.yaml"})
 	var pdb policyv1.PodDisruptionBudget
 	helm.UnmarshalK8SYaml(s.T(), output, &pdb)
 
@@ -88,14 +88,14 @@ func (s *TemplateTest) TestCanChangePDBMinAvailablePercent() {
 func (s *TemplateTest) TestBothPDBValues() {
 	options := &helm.Options{
 		SetValues: map[string]string{
-			"pod.distruptionBudget.enabled":        "true",
-			"pod.distruptionBudget.minAvailable":   "50%",
-			"pod.distruptionBudget.maxUnavailable": "2",
+			"pod.disruptionBudget.enabled":        "true",
+			"pod.disruptionBudget.minAvailable":   "50%",
+			"pod.disruptionBudget.maxUnavailable": "2",
 		},
 		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
 	}
 
-	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/poddistruptionbudget.yaml"})
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/poddisruptionbudget.yaml"})
 	var pdb policyv1.PodDisruptionBudget
 	helm.UnmarshalK8SYaml(s.T(), output, &pdb)
 
