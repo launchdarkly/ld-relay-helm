@@ -4,6 +4,13 @@ Change log
 All notable changes to the LaunchDarkly Relay Proxy Helm Chart will be documented in this file. This project adheres to [Semantic Versioning](https://semver.org).
 
 
+## [3.3.2](https://github.com/launchdarkly/ld-relay-helm/compare/3.3.1...3.3.2) (2025-05-05)
+
+
+### Bug Fixes
+
+* Correct typo for PodDisruptionBudget ([#75](https://github.com/launchdarkly/ld-relay-helm/issues/75)) ([3042465](https://github.com/launchdarkly/ld-relay-helm/commit/304246580a75e4cda0b5fdbbfb922b1d621a1204))
+
 ## [3.3.1](https://github.com/launchdarkly/ld-relay-helm/compare/3.3.0...3.3.1) (2025-01-16)
 
 
