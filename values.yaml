@@ -34,6 +34,17 @@ pod:
     # fsGroup: 2000
   # PriorityClassName to apply to the pod.
   priorityClassName: ""
+  # DEPRECATED: Use pod.disruptionBudget instead. This will be removed in the next major version.
+  distruptionBudget:
+    # Specifies whether a pdb should be created
+    enabled: false
+    # Number of pods that are available after eviction as number or percentage (eg.: 50% or 2)
+    ## Defaults to 0 if not specified
+    minAvailable: ""
+    # Number of pods that are unavailable after eviction as number or percentage (eg.: 50% or 2).
+    # Only one of (minavailable or maxUnavailable) can be specificed.
+    # Has higher precedence over `podDisruptionBudget.minAvailable`
+    maxUnavailable: ""
   disruptionBudget:
     # Specifies whether a pdb should be created
     enabled: false
