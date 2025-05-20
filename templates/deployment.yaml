@@ -20,6 +20,9 @@ spec:
       {{- end }}
       labels:
         {{- include "ld-relay.selectorLabels" . | nindent 8 }}
+        {{- with .Values.commonLabels }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
         {{- with .Values.pod.labels }}
           {{- toYaml . | nindent 8 }}
         {{- end }}

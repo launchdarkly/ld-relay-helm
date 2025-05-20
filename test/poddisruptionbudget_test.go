@@ -199,3 +199,21 @@ func (s *TemplateTest) TestBothPDBValuesWithDeprecatedProperty() {
 	s.Require().Equal(2, pdb.Spec.MaxUnavailable.IntValue())
 	s.Require().Nil(pdb.Spec.MinAvailable)
 }
+
+func (s *TemplateTest) TestPDBCanSetCommonLabels() {
+	options := &helm.Options{
+		SetValues: map[string]string{
+			"pod.disruptionBudget.enabled": "true",
+			"commonLabels.environment":     "production",
+			"commonLabels.team":            "platform",
+		},
+		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
+	}
+
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/poddisruptionbudget.yaml"})
+	var pdb policyv1.PodDisruptionBudget
+	helm.UnmarshalK8SYaml(s.T(), output, &pdb)
+
+	s.Require().Equal("production", pdb.Labels["environment"])
+	s.Require().Equal("platform", pdb.Labels["team"])
+}

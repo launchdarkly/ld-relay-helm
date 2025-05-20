@@ -451,3 +451,20 @@ func (s *TemplateTest) TestNotSetTerminationGracePeriodSeconds() {
 
 	s.Require().Empty(deployment.Spec.Template.Spec.TerminationGracePeriodSeconds)
 }
+
+func (s *TemplateTest) TestCanSetCommonLabels() {
+	options := &helm.Options{
+		SetValues: map[string]string{
+			"commonLabels.environment": "production",
+			"commonLabels.team":        "platform",
+		},
+		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
+	}
+
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/deployment.yaml"})
+	var deployment appsv1.Deployment
+	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
+
+	s.Require().Equal("production", deployment.Spec.Template.Labels["environment"])
+	s.Require().Equal("platform", deployment.Spec.Template.Labels["team"])
+}

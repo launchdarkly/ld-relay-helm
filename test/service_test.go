@@ -54,3 +54,20 @@ func (s *TemplateTest) TestServiceSupportsAnnotations() {
 
 	s.Require().Equal(service.Annotations["service.beta.kubernetes.io/aws-load-balancer-internal"], "\"true\"")
 }
+
+func (s *TemplateTest) TestServiceCanSetCommonLabels() {
+	options := &helm.Options{
+		SetValues: map[string]string{
+			"commonLabels.environment": "production",
+			"commonLabels.team":        "platform",
+		},
+		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
+	}
+
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/service.yaml"})
+	var service corev1.Service
+	helm.UnmarshalK8SYaml(s.T(), output, &service)
+
+	s.Require().Equal("production", service.Labels["environment"])
+	s.Require().Equal("platform", service.Labels["team"])
+}
