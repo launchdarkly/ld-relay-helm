@@ -1,11 +1,11 @@
 name: Publish Chart
-description: 'Publish to gh-pages-backed chart repository'
+description: "Publish to gh-pages-backed chart repository"
 inputs:
   dry_run:
-    description: 'Is this a dry run. If so no package will be published.'
+    description: "Is this a dry run. If so no package will be published."
     required: true
   token:
-    description: 'The GitHub token used to upload artifacts to the published release'
+    description: "The GitHub token used to upload artifacts to the published release"
     required: true
 
 runs:
@@ -27,22 +27,23 @@ runs:
     - name: Package the helm chart
       shell: bash
       run: |
-        mkdir -p new_chart
-        helm package -d new_chart .
+        mkdir -p new-chart
+        helm package -d new-chart .
 
     - name: Generate updated index.yaml
       shell: bash
-      run: helm repo index new_chart --url https://launchdarkly.github.io/ld-relay-helm --merge helm-repo/index.yaml
+      run: helm repo index new-chart --url https://launchdarkly.github.io/ld-relay-helm --merge helm-repo/index.yaml
 
     - name: Move files into publishable directory
       shell: bash
-      run: mv new_chart/${{ steps.version.outputs.ARTIFACT }} new_chart/index.yaml helm-repo
+      run: mv new-chart/${{ steps.version.outputs.ARTIFACT }} new-chart/index.yaml helm-repo
+      run: mv helm-repo/*tgz new-chart/
 
     - name: Publish to GitHub pages
       if: ${{ inputs.dry_run == 'false' }}
       uses: launchdarkly/gh-actions/actions/publish-pages@publish-pages-v1.0.2
       with:
-        docs_path: helm-repo
+        docs_path: new-chart
         github_token: ${{ inputs.token }}
 
     - name: Attach published chart to release
