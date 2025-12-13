@@ -52,3 +52,16 @@ runs:
       run: gh release upload ${{ steps.version.outputs.CHART_VERSION }} helm-repo/${{ steps.version.outputs.ARTIFACT }} --clobber
       env:
         GH_TOKEN: ${{ inputs.token }}
+
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v3.6.0
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Push chart to GHCR
+      run: |
+        mkdir -p ld-relay
+        helm package -d ld-relay .
+        helm push ld-relay-*.tgz oci://ghcr.io/${GITHUB_REPOSITORY_OWNER}/charts    
