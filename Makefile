@@ -19,7 +19,7 @@ unittest: #! Run the unit tests
 
 .PHONY: lint
 lint: #! Run helm lint against this chart
-	@helm lint .
+	@helm lint
 
 .PHONY: package
 package: #! Build the helm package (e.g. ld-relay-x.y.z.tgz)
