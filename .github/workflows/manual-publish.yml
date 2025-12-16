@@ -12,8 +12,9 @@ jobs:
     runs-on: ubuntu-latest
     # Needed to get tokens during publishing.
     permissions:
-      id-token: write
-      contents: write
+      id-token: write # Needed if using OIDC to get release secrets.
+      contents: write # Contents and pull-requests are for release-please to make releases.
+      packages: write # needed for ghcr access
     steps:
       - uses: actions/checkout@v4
 
