@@ -36,7 +36,7 @@ runs:
       shell: bash
       run: helm repo index build --url https://launchdarkly.github.io/ld-relay-helm --merge helm-repo/index.yaml
 
-    - name: Update GH-pages with new artificats and ujpdated index.yaml
+    - name: Update GH-pages with new artifacts and updated index.yaml
       shell: bash
       run: mv build/${{ steps.version.outputs.ARTIFACT }} build/index.yaml helm-repo
 
