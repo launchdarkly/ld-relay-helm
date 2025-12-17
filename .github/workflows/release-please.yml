@@ -2,7 +2,7 @@ name: Run Release Please
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   release-package:
@@ -10,6 +10,7 @@ jobs:
     permissions:
       id-token: write # Needed if using OIDC to get release secrets.
       contents: write # Contents and pull-requests are for release-please to make releases.
+      packages: write # needed for ghcr access
       pull-requests: write
     steps:
       - uses: googleapis/release-please-action@v4
@@ -27,7 +28,13 @@ jobs:
         if: ${{ steps.release.outputs.releases_created == 'true' }}
         uses: ./.github/actions/ci
 
-      - uses: ./.github/actions/publish
+      - uses: ./.github/actions/publish-gh-pages
+        if: ${{ steps.release.outputs.releases_created == 'true' }}
+        with:
+          dry_run: false
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: ./.github/actions/publish-ghcr
         if: ${{ steps.release.outputs.releases_created == 'true' }}
         with:
           dry_run: false

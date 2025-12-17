@@ -24,26 +24,28 @@ runs:
         echo "CHART_VERSION=$version" >> "$GITHUB_OUTPUT"
         echo "ARTIFACT=ld-relay-$version.tgz" >> "$GITHUB_OUTPUT"
 
+    - name: Make build directory
+      shell: bash
+      run: mkdir -p build
+
     - name: Package the helm chart
       shell: bash
-      run: |
-        mkdir -p new-chart
-        helm package -d new-chart .
+      run: helm package -d build .
 
     - name: Generate updated index.yaml
       shell: bash
-      run: helm repo index new-chart --url https://launchdarkly.github.io/ld-relay-helm --merge helm-repo/index.yaml
+      run: helm repo index build --url https://launchdarkly.github.io/ld-relay-helm --merge helm-repo/index.yaml
 
     - name: Move files into publishable directory
       shell: bash
-      run: mv new-chart/${{ steps.version.outputs.ARTIFACT }} new-chart/index.yaml helm-repo
-      run: mv helm-repo/*tgz new-chart/
+      run: mv build/${{ steps.version.outputs.ARTIFACT }} build/index.yaml helm-repo
+      run: mv helm-repo/*tgz build/
 
     - name: Publish to GitHub pages
       if: ${{ inputs.dry_run == 'false' }}
       uses: launchdarkly/gh-actions/actions/publish-pages@publish-pages-v1.0.2
       with:
-        docs_path: new-chart
+        docs_path: build
         github_token: ${{ inputs.token }}
 
     - name: Attach published chart to release
