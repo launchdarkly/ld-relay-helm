@@ -31,6 +31,8 @@ helm install ld-relay --set relay.environment.LD_ENV_YourEnvironment=your-sdk-ke
 
 For additional configuration, use the [Configuration options](#configuration-options) below.
 
+OCI artifacts of all LaunchDarkly Helm charts are available in [ghcr.io](https://github.com/orgs/launchdarkly/packages?q=helm-charts).
+
 ## Configuration options
 
 To customize this Helm chart, override the configuration options defined in the [values file](https://github.com/launchdarkly/ld-relay-helm/blob/main/values.yaml). The values file contains detailed documentation on each option.

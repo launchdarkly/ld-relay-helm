@@ -64,4 +64,4 @@ runs:
       run: |
         mkdir -p ld-relay
         helm package -d ld-relay .
-        helm push ld-relay-*.tgz oci://ghcr.io/${GITHUB_REPOSITORY_OWNER}/charts    
+        helm push ld-relay-*.tgz oci://ghcr.io/${GITHUB_REPOSITORY_OWNER}/helm-charts
