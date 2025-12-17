@@ -6,6 +6,16 @@ on:
         description: "Is this a dry run? If so no package will be published."
         type: boolean
         required: true
+      skip_gh_pages:
+        description: "Skip publishing to GitHub Pages"
+        type: boolean
+        required: false
+        default: false
+      skip_ghcr:
+        description: "Skip publishing to GitHub Container Registry (GHCR)"
+        type: boolean
+        required: false
+        default: false
 
 jobs:
   build-publish:
@@ -24,11 +34,13 @@ jobs:
         uses: ./.github/actions/ci
 
       - uses: ./.github/actions/publish-gh-pages
+        if: ${{ !inputs.skip_gh_pages }}
         with:
           dry_run: ${{ inputs.dry_run }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: ./.github/actions/publish-ghcr
+        if: ${{ !inputs.skip_ghcr }}
         with:
           dry_run: ${{ inputs.dry_run }}
           token: ${{ secrets.GITHUB_TOKEN }}
