@@ -1,0 +1,34 @@
+name: Publish Chart
+description: "Publish to gh-pages-backed chart repository"
+inputs:
+  dry_run:
+    description: "Is this a dry run. If so no package will be published."
+    required: true
+  token:
+    description: "The GitHub token used to upload artifacts to the published release"
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@v4
+
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v3.6.0
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ inputs.token }}
+
+    - name: Make build directory
+      shell: bash
+      run: mkdir -p build
+
+    - name: Package the helm chart
+      shell: bash
+      run: helm package -d build .
+
+    - name: Push chart to GHCR
+      if: ${{ inputs.dry_run == 'false' }}
+      shell: bash
+      run: helm push build/ld-relay-*.tgz oci://ghcr.io/${GITHUB_REPOSITORY_OWNER}/helm-charts
