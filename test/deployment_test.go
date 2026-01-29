@@ -7,6 +7,48 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
+func (s *TemplateTest) TestDeploymentConfigMapRefRespectsFullnameOverride() {
+	options := &helm.Options{
+		SetValues: map[string]string{
+			"fullnameOverride": "my-custom-relay",
+		},
+		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
+	}
+
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/deployment.yaml"})
+	var deployment appsv1.Deployment
+	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
+
+	// Check that the envFrom configMapRef uses the fullnameOverride
+	configMapRef := deployment.Spec.Template.Spec.Containers[0].EnvFrom[0].ConfigMapRef
+	s.Require().NotNil(configMapRef)
+	s.Require().Equal("my-custom-relay-config", configMapRef.Name)
+
+	// Check that the volume's configMap reference uses the fullnameOverride
+	configVolume := deployment.Spec.Template.Spec.Volumes[0]
+	s.Require().NotNil(configVolume.ConfigMap)
+	s.Require().Equal("my-custom-relay-config", configVolume.ConfigMap.Name)
+}
+
+func (s *TemplateTest) TestDeploymentConfigMapRefIncludesReleaseNameByDefault() {
+	options := &helm.Options{
+		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
+	}
+
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/deployment.yaml"})
+	var deployment appsv1.Deployment
+	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
+
+	// The release name is "ld-relay-test", so the configMap references should include it
+	configMapRef := deployment.Spec.Template.Spec.Containers[0].EnvFrom[0].ConfigMapRef
+	s.Require().NotNil(configMapRef)
+	s.Require().Contains(configMapRef.Name, s.Release)
+
+	configVolume := deployment.Spec.Template.Spec.Volumes[0]
+	s.Require().NotNil(configVolume.ConfigMap)
+	s.Require().Contains(configVolume.ConfigMap.Name, s.Release)
+}
+
 func (s *TemplateTest) TestCanControlContainerPorts() {
 	options := &helm.Options{
 		SetValues: map[string]string{
@@ -154,7 +196,7 @@ func (s *TemplateTest) TestCanLoadConfigFromVolume() {
 	var deployment appsv1.Deployment
 	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
 
-	s.Require().Equal("ld-relay-config", deployment.Spec.Template.Spec.Volumes[0].Name)
+	s.Require().Equal(s.Release+"-config", deployment.Spec.Template.Spec.Volumes[0].Name)
 
 	s.Require().Equal("ld-relay-volume", deployment.Spec.Template.Spec.Volumes[1].Name)
 	s.Require().Equal("ld-relay-pvc", deployment.Spec.Template.Spec.Volumes[1].PersistentVolumeClaim.ClaimName)
@@ -185,7 +227,7 @@ func (s *TemplateTest) TestCanEnableOfflineMode() {
 	var deployment appsv1.Deployment
 	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
 
-	s.Require().Equal("ld-relay-config", deployment.Spec.Template.Spec.Volumes[0].Name)
+	s.Require().Equal(s.Release+"-config", deployment.Spec.Template.Spec.Volumes[0].Name)
 
 	s.Require().Equal("ld-relay-volume", deployment.Spec.Template.Spec.Volumes[1].Name)
 	s.Require().Equal("ld-relay-pvc", deployment.Spec.Template.Spec.Volumes[1].PersistentVolumeClaim.ClaimName)

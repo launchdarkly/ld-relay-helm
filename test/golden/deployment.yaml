@@ -23,9 +23,9 @@ spec:
         app.kubernetes.io/instance: ld-relay-test
     spec:
       volumes:
-      - name: ld-relay-config
+      - name: ld-relay-test-config
         configMap:
-          name: ld-relay-config
+          name: ld-relay-test-config
       
       
       serviceAccountName: ld-relay-test
@@ -36,7 +36,7 @@ spec:
 
           envFrom:
             - configMapRef:
-                name: ld-relay-config
+                name: ld-relay-test-config
           securityContext:
             {}
           image: "launchdarkly/ld-relay:8.10.5"

@@ -3,7 +3,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: "ld-relay-config"
+  name: "ld-relay-test-config"
   labels:
     app.kubernetes.io/name: ld-relay
     app.kubernetes.io/instance: ld-relay-test

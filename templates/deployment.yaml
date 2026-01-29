@@ -35,9 +35,9 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       volumes:
-      - name: {{ include "ld-relay.name" . }}-config
+      - name: {{ include "ld-relay.fullname" . }}-config
         configMap:
-          name: {{ include "ld-relay.name" . }}-config
+          name: {{ include "ld-relay.fullname" . }}-config
       {{ $has_volumes := false }}
       {{- if .Values.relay.volume.definition }}
         {{ $has_volumes = true }}
@@ -117,7 +117,7 @@ spec:
                 name: {{ .Values.relay.envFromSecret }}
             {{- end }}
             - configMapRef:
-                name: {{ include "ld-relay.name" . }}-config
+                name: {{ include "ld-relay.fullname" . }}-config
           {{- with .Values.relay.lifecycle }}
           lifecycle:
             {{- toYaml . | nindent 12 }}
