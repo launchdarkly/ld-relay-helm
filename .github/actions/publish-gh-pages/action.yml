@@ -38,7 +38,7 @@ runs:
 
     - name: Update GH-pages with new artifacts and updated index.yaml
       shell: bash
-      run: mv build/${{ steps.version.outputs.ARTIFACT }} build/index.yaml helm-repo
+      run: mv build/${{ steps.version.outputs.ARTIFACT }} helm-repo
 
     - name: Move files into publishable directory
       shell: bash
