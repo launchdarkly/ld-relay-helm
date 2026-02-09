@@ -99,16 +99,15 @@ spec:
             {{- end }}
           {{- end }}
 
-          {{- if .Values.relay.volume.config }}
+          {{- if .Values.relay.command }}
+          command:
+            {{- toYaml .Values.relay.command | nindent 12 }}
+          {{- else if .Values.relay.volume.config }}
           command: ["/usr/bin/ldr", "--config", "/mnt/volume/{{ .Values.relay.volume.config }}", "--allow-missing-file", "--from-env"]
           {{- end }}
-          {{- if .Values.command }}
-          command:
-            {{- toYaml .Values.command | nindent 12 }}
-          {{- end }}
-          {{- if .Values.args }}
+          {{- if .Values.relay.args }}
           args:
-            {{- toYaml .Values.args | nindent 12 }}
+            {{- toYaml .Values.relay.args | nindent 12 }}
           {{- end }}
 
           env:

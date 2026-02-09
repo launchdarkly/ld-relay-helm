@@ -68,19 +68,6 @@ pod:
 # Optional termination grace period in seconds for graceful pod shutdown
 # terminationGracePeriodSeconds: 90
 
-# Optional command override for the relay container
-# If specified, this overrides the default command in the container
-command: []
-  # - /usr/bin/ldr
-  # - --config
-  # - /path/to/config
-
-# Optional args to pass to the relay container
-# These are appended to the command
-args: []
-  # - --allow-missing-file
-  # - --from-env
-
 securityContext: {}
   # capabilities:
   #   drop:
@@ -155,6 +142,17 @@ tolerations: []
 affinity: {}
 
 relay:
+  # Optional command override for the relay container
+  #
+  # If specified, this overrides the default command generation strategy. This
+  # includes special handling of other Chart features like the volume.config
+  # mapping.
+  command: []
+
+  # Optional args to pass to the relay container
+  # These are appended to the command
+  args: []
+
   # Specify the relay environment variables here to load them into this chart's ConfigMap directly.
   # These environment variables should match the ones documented by the relay proxy at https://github.com/launchdarkly/ld-relay
   environment: {}
@@ -213,9 +211,9 @@ relay:
       path: /status
       port: api
   readinessProbe:
-      httpGet:
-        path: /status
-        port: api
+    httpGet:
+      path: /status
+      port: api
 
   lifecycle: []
     # preStop:
@@ -224,7 +222,6 @@ relay:
     #       - sh
     #       - -c
     #       - sleep 60
-
 
   # Enables mounting a k8s volume onto the relay container.
   #
