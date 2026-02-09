@@ -28,3 +28,4 @@ docs
 go.mod
 go.sum
 Makefile
+helm-repo/
