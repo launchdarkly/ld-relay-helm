@@ -133,6 +133,7 @@ func (s *TemplateTest) TestCanSetEnvironmentVariablesFromEnvFromSecrets() {
 	s.Require().Equal("ld-relay-test-secret-environment-variables", deployment.Spec.Template.Spec.Containers[0].EnvFrom[0].SecretRef.Name)
 	s.Require().Len(deployment.Spec.Template.Spec.Containers[0].EnvFrom, 2)
 }
+
 func (s *TemplateTest) TestNotSetEnvironmentVariablesFromEnvFromSecrets() {
 	options := &helm.Options{
 		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
@@ -333,7 +334,6 @@ func (s *TemplateTest) TestCanAffectHttpGetProbes() {
 	s.Require().Equal("/readiness", deployment.Spec.Template.Spec.Containers[0].ReadinessProbe.ProbeHandler.HTTPGet.Path)
 	s.Require().Equal(int(9000), deployment.Spec.Template.Spec.Containers[0].ReadinessProbe.ProbeHandler.HTTPGet.Port.IntValue())
 	s.Require().Equal(corev1.URISchemeHTTPS, deployment.Spec.Template.Spec.Containers[0].ReadinessProbe.ProbeHandler.HTTPGet.Scheme)
-
 }
 
 func (s *TemplateTest) TestCanDisableProbes() {
@@ -509,4 +509,181 @@ func (s *TemplateTest) TestCanSetCommonLabels() {
 
 	s.Require().Equal("production", deployment.Spec.Template.Labels["environment"])
 	s.Require().Equal("platform", deployment.Spec.Template.Labels["team"])
+}
+
+func (s *TemplateTest) TestCanOverrideCommand() {
+	options := &helm.Options{
+		SetValues: map[string]string{
+			"relay.command[0]": "/custom/bin/relay",
+			"relay.command[1]": "--custom-flag",
+		},
+		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
+	}
+
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/deployment.yaml"})
+	var deployment appsv1.Deployment
+	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
+
+	expectedCommand := []string{"/custom/bin/relay", "--custom-flag"}
+	s.Require().Equal(expectedCommand, deployment.Spec.Template.Spec.Containers[0].Command)
+}
+
+func (s *TemplateTest) TestCommandOverridesTakePrecedenceOverVolumeConfig() {
+	options := &helm.Options{
+		SetValues: map[string]string{
+			"relay.volume.config": "my-config.config",
+			"relay.volume.definition.persistentVolumeClaim.claimName": "ld-relay-pvc",
+			"relay.command[0]": "/custom/bin/relay",
+			"relay.command[1]": "--custom-flag",
+		},
+		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
+	}
+
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/deployment.yaml"})
+	var deployment appsv1.Deployment
+	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
+
+	// When relay.command is set, it should override the default volume.config command generation
+	expectedCommand := []string{"/custom/bin/relay", "--custom-flag"}
+	s.Require().Equal(expectedCommand, deployment.Spec.Template.Spec.Containers[0].Command)
+}
+
+func (s *TemplateTest) TestCanSetArgs() {
+	options := &helm.Options{
+		SetValues: map[string]string{
+			"relay.args[0]": "--verbose",
+			"relay.args[1]": "--debug",
+		},
+		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
+	}
+
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/deployment.yaml"})
+	var deployment appsv1.Deployment
+	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
+
+	expectedArgs := []string{"--verbose", "--debug"}
+	s.Require().Equal(expectedArgs, deployment.Spec.Template.Spec.Containers[0].Args)
+}
+
+func (s *TemplateTest) TestCanAddExtraVolumes() {
+	options := &helm.Options{
+		SetValues: map[string]string{
+			"relay.extraVolumes[0].name":              "custom-config",
+			"relay.extraVolumes[0].configMap.name":    "my-custom-config",
+			"relay.extraVolumes[1].name":              "custom-secret",
+			"relay.extraVolumes[1].secret.secretName": "my-secret",
+		},
+		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
+	}
+
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/deployment.yaml"})
+	var deployment appsv1.Deployment
+	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
+
+	// Default volume + 2 extra volumes
+	s.Require().Len(deployment.Spec.Template.Spec.Volumes, 3)
+
+	// Check the extra volumes
+	s.Require().Equal("custom-config", deployment.Spec.Template.Spec.Volumes[1].Name)
+	s.Require().Equal("my-custom-config", deployment.Spec.Template.Spec.Volumes[1].ConfigMap.Name)
+
+	s.Require().Equal("custom-secret", deployment.Spec.Template.Spec.Volumes[2].Name)
+	s.Require().Equal("my-secret", deployment.Spec.Template.Spec.Volumes[2].Secret.SecretName)
+}
+
+func (s *TemplateTest) TestCanAddExtraVolumeMounts() {
+	options := &helm.Options{
+		SetValues: map[string]string{
+			"relay.extraVolumeMounts[0].name":      "custom-mount",
+			"relay.extraVolumeMounts[0].mountPath": "/mnt/custom",
+			"relay.extraVolumeMounts[0].readOnly":  "true",
+			"relay.extraVolumeMounts[1].name":      "another-mount",
+			"relay.extraVolumeMounts[1].mountPath": "/mnt/another",
+		},
+		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
+	}
+
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/deployment.yaml"})
+	var deployment appsv1.Deployment
+	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
+
+	// Should have volumeMounts even without default volumes
+	s.Require().Len(deployment.Spec.Template.Spec.Containers[0].VolumeMounts, 2)
+
+	s.Require().Equal("custom-mount", deployment.Spec.Template.Spec.Containers[0].VolumeMounts[0].Name)
+	s.Require().Equal("/mnt/custom", deployment.Spec.Template.Spec.Containers[0].VolumeMounts[0].MountPath)
+	s.Require().True(deployment.Spec.Template.Spec.Containers[0].VolumeMounts[0].ReadOnly)
+
+	s.Require().Equal("another-mount", deployment.Spec.Template.Spec.Containers[0].VolumeMounts[1].Name)
+	s.Require().Equal("/mnt/another", deployment.Spec.Template.Spec.Containers[0].VolumeMounts[1].MountPath)
+	s.Require().False(deployment.Spec.Template.Spec.Containers[0].VolumeMounts[1].ReadOnly)
+}
+
+func (s *TemplateTest) TestExtraVolumeMountsWorkWithDefaultVolumes() {
+	options := &helm.Options{
+		SetValues: map[string]string{
+			"relay.volume.config": "my-config.config",
+			"relay.volume.definition.persistentVolumeClaim.claimName": "ld-relay-pvc",
+			"relay.extraVolumeMounts[0].name":                         "custom-mount",
+			"relay.extraVolumeMounts[0].mountPath":                    "/mnt/custom",
+		},
+		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
+	}
+
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/deployment.yaml"})
+	var deployment appsv1.Deployment
+	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
+
+	// Should have default volume mount + extra volume mount
+	s.Require().Len(deployment.Spec.Template.Spec.Containers[0].VolumeMounts, 2)
+
+	s.Require().Equal("ld-relay-volume", deployment.Spec.Template.Spec.Containers[0].VolumeMounts[0].Name)
+	s.Require().Equal("/mnt/volume", deployment.Spec.Template.Spec.Containers[0].VolumeMounts[0].MountPath)
+
+	s.Require().Equal("custom-mount", deployment.Spec.Template.Spec.Containers[0].VolumeMounts[1].Name)
+	s.Require().Equal("/mnt/custom", deployment.Spec.Template.Spec.Containers[0].VolumeMounts[1].MountPath)
+}
+
+func (s *TemplateTest) TestCanAddInitContainers() {
+	options := &helm.Options{
+		SetValues: map[string]string{
+			"relay.initContainers[0].name":       "init-config",
+			"relay.initContainers[0].image":      "busybox:1.28",
+			"relay.initContainers[0].command[0]": "sh",
+			"relay.initContainers[0].command[1]": "-c",
+			"relay.initContainers[0].command[2]": "echo Initializing...",
+			"relay.initContainers[1].name":       "wait-for-db",
+			"relay.initContainers[1].image":      "busybox:1.28",
+			"relay.initContainers[1].command[0]": "sh",
+			"relay.initContainers[1].command[1]": "-c",
+			"relay.initContainers[1].command[2]": "until nc -z db 5432; do sleep 1; done",
+		},
+		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
+	}
+
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/deployment.yaml"})
+	var deployment appsv1.Deployment
+	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
+
+	s.Require().Len(deployment.Spec.Template.Spec.InitContainers, 2)
+
+	s.Require().Equal("init-config", deployment.Spec.Template.Spec.InitContainers[0].Name)
+	s.Require().Equal("busybox:1.28", deployment.Spec.Template.Spec.InitContainers[0].Image)
+	s.Require().Equal([]string{"sh", "-c", "echo Initializing..."}, deployment.Spec.Template.Spec.InitContainers[0].Command)
+
+	s.Require().Equal("wait-for-db", deployment.Spec.Template.Spec.InitContainers[1].Name)
+	s.Require().Equal("busybox:1.28", deployment.Spec.Template.Spec.InitContainers[1].Image)
+	s.Require().Equal([]string{"sh", "-c", "until nc -z db 5432; do sleep 1; done"}, deployment.Spec.Template.Spec.InitContainers[1].Command)
+}
+
+func (s *TemplateTest) TestNoInitContainersByDefault() {
+	options := &helm.Options{
+		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
+	}
+
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/deployment.yaml"})
+	var deployment appsv1.Deployment
+	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
+
+	s.Require().Empty(deployment.Spec.Template.Spec.InitContainers)
 }

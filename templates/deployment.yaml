@@ -66,6 +66,9 @@ spec:
               {{- end }}
             {{- end }}
       {{- end }}
+      {{- with .Values.relay.extraVolumes }}
+        {{- toYaml . | nindent 6 }}
+      {{- end }}
       serviceAccountName: {{ include "ld-relay.serviceAccountName" . }}
       {{- with .Values.pod.securityContext }}
       securityContext:
@@ -74,9 +77,13 @@ spec:
       {{- if .Values.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
       {{- end}}
+      {{- with .Values.relay.initContainers }}
+      initContainers:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: {{ .Chart.Name }}
-          {{- if $has_volumes }}
+          {{- if or $has_volumes .Values.relay.extraVolumeMounts }}
           volumeMounts:
             {{- if .Values.relay.volume.definition }}
             - name: {{ include "ld-relay.name" . }}-volume
@@ -87,10 +94,20 @@ spec:
               mountPath: /mnt/secrets/
               readOnly: true
             {{- end }}
+            {{- with .Values.relay.extraVolumeMounts }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
           {{- end }}
 
-          {{- if .Values.relay.volume.config }}
+          {{- if .Values.relay.command }}
+          command:
+            {{- toYaml .Values.relay.command | nindent 12 }}
+          {{- else if .Values.relay.volume.config }}
           command: ["/usr/bin/ldr", "--config", "/mnt/volume/{{ .Values.relay.volume.config }}", "--allow-missing-file", "--from-env"]
+          {{- end }}
+          {{- if .Values.relay.args }}
+          args:
+            {{- toYaml .Values.relay.args | nindent 12 }}
           {{- end }}
 
           env:

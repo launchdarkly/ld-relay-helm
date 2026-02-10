@@ -65,6 +65,7 @@ pod:
   #   topologyKey: topology.kubernetes.io/zone
   #   whenUnsatisfiable: DoNotSchedule
 
+# Optional termination grace period in seconds for graceful pod shutdown
 # terminationGracePeriodSeconds: 90
 
 securityContext: {}
@@ -141,6 +142,17 @@ tolerations: []
 affinity: {}
 
 relay:
+  # Optional command override for the relay container
+  #
+  # If specified, this overrides the default command generation strategy. This
+  # includes special handling of other Chart features like the volume.config
+  # mapping.
+  command: []
+
+  # Optional args to pass to the relay container
+  # These are appended to the command
+  args: []
+
   # Specify the relay environment variables here to load them into this chart's ConfigMap directly.
   # These environment variables should match the ones documented by the relay proxy at https://github.com/launchdarkly/ld-relay
   environment: {}
@@ -199,9 +211,9 @@ relay:
       path: /status
       port: api
   readinessProbe:
-      httpGet:
-        path: /status
-        port: api
+    httpGet:
+      path: /status
+      port: api
 
   lifecycle: []
     # preStop:
@@ -210,7 +222,6 @@ relay:
     #       - sh
     #       - -c
     #       - sleep 60
-
 
   # Enables mounting a k8s volume onto the relay container.
   #
@@ -238,3 +249,24 @@ relay:
     definition: {}
     #   persistentVolumeClaim:
     #     claimName: ld-relay-pvc
+
+  # Additional volumes to mount in the relay pod
+  # These are appended to the default volumes
+  extraVolumes: []
+    # - name: custom-volume
+    #   configMap:
+    #     name: custom-config
+
+  # Additional volume mounts for the relay container
+  # These are appended to the default volume mounts
+  extraVolumeMounts: []
+    # - name: custom-volume
+    #   mountPath: /mnt/custom
+    #   readOnly: true
+
+  # Init containers to run before the relay container starts
+  # Useful for setup tasks like downloading configuration or waiting for dependencies
+  initContainers: []
+    # - name: init-config
+    #   image: busybox:1.28
+    #   command: ['sh', '-c', 'echo "Initializing..."']
