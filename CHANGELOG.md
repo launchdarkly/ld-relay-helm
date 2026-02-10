@@ -4,6 +4,13 @@ Change log
 All notable changes to the LaunchDarkly Relay Proxy Helm Chart will be documented in this file. This project adheres to [Semantic Versioning](https://semver.org).
 
 
+## [3.5.0](https://github.com/launchdarkly/ld-relay-helm/compare/3.4.1...3.5.0) (2026-02-10)
+
+
+### Features
+
+* Add support for init containers and multiple volumes ([#90](https://github.com/launchdarkly/ld-relay-helm/issues/90)) ([c5cd4ff](https://github.com/launchdarkly/ld-relay-helm/commit/c5cd4ff999d3210d2a613ca7e21dc166773f4cce))
+
 ## [3.4.1](https://github.com/launchdarkly/ld-relay-helm/compare/3.4.0...3.4.1) (2026-01-30)
 
 
