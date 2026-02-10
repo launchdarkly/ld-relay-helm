@@ -54,6 +54,6 @@ runs:
     - name: Attach published chart to release
       if: ${{ inputs.dry_run == 'false' }}
       shell: bash
-      run: gh release upload ${{ steps.version.outputs.CHART_VERSION }} helm-repo/${{ steps.version.outputs.ARTIFACT }} --clobber
+      run: gh release upload ${{ steps.version.outputs.CHART_VERSION }} build/${{ steps.version.outputs.ARTIFACT }} --clobber
       env:
         GH_TOKEN: ${{ inputs.token }}
