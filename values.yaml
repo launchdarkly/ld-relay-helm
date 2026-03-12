@@ -215,7 +215,7 @@ relay:
       path: /status
       port: api
 
-  lifecycle: []
+  lifecycle: {}
     # preStop:
     #   exec:
     #     command:
