@@ -13,7 +13,7 @@ jobs:
       packages: write # needed for ghcr access
       pull-requests: write
     steps:
-      - uses: googleapis/release-please-action@v4
+      - uses: googleapis/release-please-action@16a9c90856f42705d54a6fda1823352bdc62cf38 # v4
         id: release
 
       - uses: actions/checkout@v4
@@ -21,7 +21,7 @@ jobs:
         with:
           fetch-depth: 0 # Full history is required for proper changelog generation
 
-      - uses: azure/setup-helm@v4.0.0
+      - uses: azure/setup-helm@29960d0f5f19214b88e1d9ba750a9914ab0f1a2f # v4.0.0
         if: ${{ steps.release.outputs.releases_created == 'true' }}
 
       - name: Run quality control checks
