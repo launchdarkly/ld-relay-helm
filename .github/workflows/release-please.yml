@@ -30,21 +30,6 @@ jobs:
         with:
           fetch-depth: 0 # Full history is required for proper changelog generation
 
-      - name: Create release tag
-        env:
-          TAG_NAME: ${{ needs.release-please.outputs.tag_name }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          if gh api "repos/${{ github.repository }}/git/ref/tags/${TAG_NAME}" >/dev/null 2>&1; then
-            echo "Tag ${TAG_NAME} already exists, skipping creation."
-          else
-            echo "Creating tag ${TAG_NAME}."
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git tag "${TAG_NAME}"
-            git push origin "${TAG_NAME}"
-          fi
-
       - uses: azure/setup-helm@29960d0f5f19214b88e1d9ba750a9914ab0f1a2f # v4.0.0
 
       - name: Run quality control checks
@@ -59,19 +44,3 @@ jobs:
         with:
           dry_run: false
           token: ${{ secrets.GITHUB_TOKEN }}
-
-  publish-release:
-    needs: ['release-please', 'release-package']
-    if: ${{ needs.release-please.outputs.releases_created == 'true' }}
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Publish release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG_NAME: ${{ needs.release-please.outputs.tag_name }}
-        run: >
-          gh release edit "$TAG_NAME"
-          --repo ${{ github.repository }}
-          --draft=false
