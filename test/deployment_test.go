@@ -336,6 +336,62 @@ func (s *TemplateTest) TestCanAffectHttpGetProbes() {
 	s.Require().Equal(corev1.URISchemeHTTPS, deployment.Spec.Template.Spec.Containers[0].ReadinessProbe.ProbeHandler.HTTPGet.Scheme)
 }
 
+func (s *TemplateTest) TestStartupProbeIsDisabledByDefault() {
+	options := &helm.Options{
+		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
+	}
+
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/deployment.yaml"})
+	var deployment appsv1.Deployment
+	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
+
+	s.Require().Nil(deployment.Spec.Template.Spec.Containers[0].StartupProbe)
+}
+
+func (s *TemplateTest) TestCanSetStartupProbe() {
+	options := &helm.Options{
+		SetValues: map[string]string{
+			"relay.startupProbe.httpGet.path":            "/status",
+			"relay.startupProbe.httpGet.port":            "api",
+			"relay.startupProbe.initialDelaySeconds":     "5",
+			"relay.startupProbe.periodSeconds":           "10",
+			"relay.startupProbe.failureThreshold":        "30",
+		},
+		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
+	}
+
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/deployment.yaml"})
+	var deployment appsv1.Deployment
+	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
+
+	s.Require().NotNil(deployment.Spec.Template.Spec.Containers[0].StartupProbe)
+	s.Require().Equal("/status", deployment.Spec.Template.Spec.Containers[0].StartupProbe.ProbeHandler.HTTPGet.Path)
+	s.Require().Equal("api", deployment.Spec.Template.Spec.Containers[0].StartupProbe.ProbeHandler.HTTPGet.Port.String())
+	s.Require().Equal(int32(5), deployment.Spec.Template.Spec.Containers[0].StartupProbe.InitialDelaySeconds)
+	s.Require().Equal(int32(10), deployment.Spec.Template.Spec.Containers[0].StartupProbe.PeriodSeconds)
+	s.Require().Equal(int32(30), deployment.Spec.Template.Spec.Containers[0].StartupProbe.FailureThreshold)
+}
+
+func (s *TemplateTest) TestCanSetStartupProbeWithHTTPS() {
+	options := &helm.Options{
+		SetValues: map[string]string{
+			"relay.startupProbe.httpGet.path":   "/status",
+			"relay.startupProbe.httpGet.port":   "8030",
+			"relay.startupProbe.httpGet.scheme": "HTTPS",
+		},
+		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
+	}
+
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/deployment.yaml"})
+	var deployment appsv1.Deployment
+	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
+
+	s.Require().NotNil(deployment.Spec.Template.Spec.Containers[0].StartupProbe)
+	s.Require().Equal("/status", deployment.Spec.Template.Spec.Containers[0].StartupProbe.ProbeHandler.HTTPGet.Path)
+	s.Require().Equal(int(8030), deployment.Spec.Template.Spec.Containers[0].StartupProbe.ProbeHandler.HTTPGet.Port.IntValue())
+	s.Require().Equal(corev1.URISchemeHTTPS, deployment.Spec.Template.Spec.Containers[0].StartupProbe.ProbeHandler.HTTPGet.Scheme)
+}
+
 func (s *TemplateTest) TestCanDisableProbes() {
 	options := &helm.Options{
 		SetValues: map[string]string{
