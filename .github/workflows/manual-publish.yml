@@ -55,6 +55,7 @@ jobs:
         with:
           dry_run: ${{ inputs.dry_run }}
           token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ inputs.tag }}
 
   publish-release:
     needs: build-publish
