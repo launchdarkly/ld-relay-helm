@@ -157,6 +157,10 @@ spec:
           readinessProbe:
             {{- toYaml .Values.relay.readinessProbe | nindent 12 }}
           {{- end }}
+          {{- if .Values.relay.startupProbe }}
+          startupProbe:
+            {{- toYaml .Values.relay.startupProbe | nindent 12 }}
+          {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.pod.topologySpreadConstraints }}
