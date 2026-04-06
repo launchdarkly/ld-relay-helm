@@ -52,11 +52,12 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       id-token: write # Needed if using OIDC to get release secrets.
-      contents: write # Contents and pull-requests are for release-please to make releases.
+      contents: write # Needed for publish-gh-pages to upload release assets.
       packages: write # needed for ghcr access
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ needs.release-please.outputs.tag_name }}
           fetch-depth: 0 # Full history is required for proper changelog generation
 
       - uses: azure/setup-helm@29960d0f5f19214b88e1d9ba750a9914ab0f1a2f # v4.0.0
@@ -73,6 +74,7 @@ jobs:
         with:
           dry_run: false
           token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ needs.release-please.outputs.tag_name }}
 
   publish-release:
     needs: ['release-please', 'release-package']

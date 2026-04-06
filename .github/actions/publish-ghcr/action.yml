@@ -17,7 +17,7 @@ runs:
   steps:
     - uses: actions/checkout@v4
       with:
-        ref: ${{ inputs.ref || github.ref }}
+        ref: ${{ inputs.ref || github.sha }}
 
     - name: Login to GitHub Container Registry
       uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
