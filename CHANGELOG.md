@@ -4,6 +4,18 @@ Change log
 All notable changes to the LaunchDarkly Relay Proxy Helm Chart will be documented in this file. This project adheres to [Semantic Versioning](https://semver.org).
 
 
+## [3.6.0](https://github.com/launchdarkly/ld-relay-helm/compare/3.5.0...3.6.0) (2026-04-06)
+
+
+### Features
+
+* Add option to configure startup probes in ld-relay container ([#103](https://github.com/launchdarkly/ld-relay-helm/issues/103)) ([cdac3d5](https://github.com/launchdarkly/ld-relay-helm/commit/cdac3d5eb39657e46282c5ab1b7511ac590a7649))
+
+
+### Bug Fixes
+
+* Default relay.lifecycle to map instead of array ([#99](https://github.com/launchdarkly/ld-relay-helm/issues/99)) ([613e261](https://github.com/launchdarkly/ld-relay-helm/commit/613e261bc287cde3951dc82a6e1afa8a0f9575ce))
+
 ## [3.5.0](https://github.com/launchdarkly/ld-relay-helm/compare/3.4.1...3.5.0) (2026-02-10)
 
 
