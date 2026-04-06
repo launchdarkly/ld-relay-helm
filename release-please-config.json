@@ -4,7 +4,9 @@
       "release-type": "helm",
       "versioning": "default",
       "include-v-in-tag": false,
-      "include-component-in-tag": false
+      "include-component-in-tag": false,
+      "draft": true,
+      "force-tag-creation": true
     }
   }
 }

@@ -5,37 +5,89 @@ on:
     branches: [main]
 
 jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+    steps:
+      # Create any releases first, then create tags, and then optionally create any new PRs.
+      - uses: googleapis/release-please-action@16a9c90856f42705d54a6fda1823352bdc62cf38 # v4.4.0
+        id: release
+        with:
+          skip-github-pull-request: true
+
+      # Need the repository content to be able to create and push a tag.
+      - uses: actions/checkout@v4
+        if: ${{ steps.release.outputs.release_created == 'true' }}
+
+      - name: Create release tag
+        if: ${{ steps.release.outputs.release_created == 'true' }}
+        env:
+          TAG_NAME: ${{ steps.release.outputs.tag_name }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if gh api "repos/${{ github.repository }}/git/ref/tags/${TAG_NAME}" >/dev/null 2>&1; then
+            echo "Tag ${TAG_NAME} already exists, skipping creation."
+          else
+            echo "Creating tag ${TAG_NAME}."
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git tag "${TAG_NAME}"
+            git push origin "${TAG_NAME}"
+          fi
+
+      - uses: googleapis/release-please-action@16a9c90856f42705d54a6fda1823352bdc62cf38 # v4.4.0
+        if: ${{ steps.release.outputs.release_created != 'true' }}
+        id: release-prs
+        with:
+          skip-github-release: true
+
   release-package:
+    needs: release-please
+    if: ${{ needs.release-please.outputs.release_created == 'true' }}
     runs-on: ubuntu-latest
     permissions:
       id-token: write # Needed if using OIDC to get release secrets.
-      contents: write # Contents and pull-requests are for release-please to make releases.
+      contents: write # Needed for publish-gh-pages to upload release assets.
       packages: write # needed for ghcr access
-      pull-requests: write
     steps:
-      - uses: googleapis/release-please-action@16a9c90856f42705d54a6fda1823352bdc62cf38 # v4
-        id: release
-
       - uses: actions/checkout@v4
-        if: ${{ steps.release.outputs.releases_created == 'true' }}
         with:
+          ref: ${{ needs.release-please.outputs.tag_name }}
           fetch-depth: 0 # Full history is required for proper changelog generation
 
       - uses: azure/setup-helm@29960d0f5f19214b88e1d9ba750a9914ab0f1a2f # v4.0.0
-        if: ${{ steps.release.outputs.releases_created == 'true' }}
 
       - name: Run quality control checks
-        if: ${{ steps.release.outputs.releases_created == 'true' }}
         uses: ./.github/actions/ci
 
       - uses: ./.github/actions/publish-gh-pages
-        if: ${{ steps.release.outputs.releases_created == 'true' }}
         with:
           dry_run: false
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: ./.github/actions/publish-ghcr
-        if: ${{ steps.release.outputs.releases_created == 'true' }}
         with:
           dry_run: false
           token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ needs.release-please.outputs.tag_name }}
+
+  publish-release:
+    needs: ['release-please', 'release-package']
+    if: ${{ needs.release-please.outputs.release_created == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_NAME: ${{ needs.release-please.outputs.tag_name }}
+        run: >
+          gh release edit "$TAG_NAME"
+          --repo ${{ github.repository }}
+          --draft=false
