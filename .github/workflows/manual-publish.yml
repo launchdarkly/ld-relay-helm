@@ -2,6 +2,10 @@ name: Publish Package
 on:
   workflow_dispatch:
     inputs:
+      tag:
+        description: 'Tag of an existing draft release to upload artifacts to.'
+        type: string
+        required: true
       dry_run:
         description: "Is this a dry run? If so no package will be published."
         type: boolean
@@ -16,6 +20,11 @@ on:
         type: boolean
         required: false
         default: false
+      publish_release:
+        description: "Publish (un-draft) the release after all artifacts are uploaded?"
+        type: boolean
+        required: false
+        default: true
 
 jobs:
   build-publish:
@@ -27,6 +36,8 @@ jobs:
       packages: write # needed for ghcr access
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag }}
 
       - uses: azure/setup-helm@29960d0f5f19214b88e1d9ba750a9914ab0f1a2f # v4.0.0
 
@@ -44,3 +55,19 @@ jobs:
         with:
           dry_run: ${{ inputs.dry_run }}
           token: ${{ secrets.GITHUB_TOKEN }}
+
+  publish-release:
+    needs: build-publish
+    if: ${{ format('{0}', inputs.publish_release) == 'true' && format('{0}', inputs.dry_run) == 'false' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_NAME: ${{ inputs.tag }}
+        run: >
+          gh release edit "$TAG_NAME"
+          --repo ${{ github.repository }}
+          --draft=false
