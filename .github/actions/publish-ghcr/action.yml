@@ -8,16 +8,15 @@ inputs:
     description: "The GitHub token used to upload artifacts to the published release"
     required: true
   ref:
-    description: "Git ref to checkout. Defaults to the triggering ref."
-    required: false
-    default: ''
+    description: "Git ref to checkout (e.g. a tag name)."
+    required: true
 
 runs:
   using: composite
   steps:
     - uses: actions/checkout@v4
       with:
-        ref: ${{ inputs.ref || github.sha }}
+        ref: ${{ inputs.ref }}
 
     - name: Login to GitHub Container Registry
       uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
