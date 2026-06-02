@@ -6,6 +6,10 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
+func (s *TemplateTest) TestServiceNamespace() {
+	s.assertTemplateNamespaces("Service", "templates/service.yaml", nil)
+}
+
 func (s *TemplateTest) TestServiceSupportsMultiplePorts() {
 	options := &helm.Options{
 		SetValues: map[string]string{

@@ -6,6 +6,12 @@ import (
 	policyv1 "k8s.io/api/policy/v1"
 )
 
+func (s *TemplateTest) TestPDBNamespace() {
+	s.assertTemplateNamespaces("PodDisruptionBudget", "templates/poddisruptionbudget.yaml", map[string]string{
+		"pod.disruptionBudget.enabled": "true",
+	})
+}
+
 func (s *TemplateTest) TestCanEnablePDB() {
 	options := &helm.Options{
 		SetValues: map[string]string{

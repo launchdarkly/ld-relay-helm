@@ -2,13 +2,13 @@ package test
 
 import (
 	"path/filepath"
-	"strings"
 	"testing"
 
-	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
+
+const goldenNamespace = "ld-relay-test-ns"
 
 func TestGoldenDefaultsTemplate(t *testing.T) {
 	t.Parallel()
@@ -21,7 +21,7 @@ func TestGoldenDefaultsTemplate(t *testing.T) {
 		suite.Run(t, &TemplateGoldenTest{
 			ChartPath:      chartPath,
 			Release:        "ld-relay-test",
-			Namespace:      "ld-relay-" + strings.ToLower(random.UniqueId()),
+			Namespace:      goldenNamespace,
 			GoldenFileName: name,
 			Templates:      []string{"templates/" + name + ".yaml"},
 		})
@@ -37,7 +37,7 @@ func TestGoldenIngressWithBaseConfiguration(t *testing.T) {
 	suite.Run(t, &TemplateGoldenTest{
 		ChartPath:      chartPath,
 		Release:        "ld-relay-test",
-		Namespace:      "ld-relay-" + strings.ToLower(random.UniqueId()),
+		Namespace:      goldenNamespace,
 		GoldenFileName: "ingress",
 		Templates:      []string{"templates/ingress.yaml"},
 		SetValues: map[string]string{

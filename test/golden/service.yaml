@@ -4,6 +4,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: ld-relay-test
+  namespace: ld-relay-test-ns
   labels:
     app.kubernetes.io/name: ld-relay
     app.kubernetes.io/instance: ld-relay-test

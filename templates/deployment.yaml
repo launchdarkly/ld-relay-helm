@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "ld-relay.fullname" . }}
+  namespace: {{ include "ld-relay.namespace" . }}
   labels:
     {{- include "ld-relay.labels" . | nindent 4 }}
 spec:

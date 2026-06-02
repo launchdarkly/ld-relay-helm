@@ -31,6 +31,14 @@ Create chart name and version as used by the chart label.
 {{- end }}
 
 {{/*
+Namespace rendered into the metadata of the chart's namespaced resources.
+Defaults to the release namespace; override with .Values.namespaceOverride.
+*/}}
+{{- define "ld-relay.namespace" -}}
+{{- default .Release.Namespace .Values.namespaceOverride | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
 Common labels
 */}}
 {{- define "ld-relay.labels" -}}

@@ -6,6 +6,12 @@ import (
 	autoscalingv2 "k8s.io/api/autoscaling/v2"
 )
 
+func (s *TemplateTest) TestHPANamespace() {
+	s.assertTemplateNamespaces("HorizontalPodAutoscaler", "templates/hpa.yaml", map[string]string{
+		"autoscaling.enabled": "true",
+	})
+}
+
 func (s *TemplateTest) TestHPACanSetCommonLabels() {
 	options := &helm.Options{
 		SetValues: map[string]string{

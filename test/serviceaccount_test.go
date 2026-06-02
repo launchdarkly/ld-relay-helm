@@ -6,6 +6,10 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
+func (s *TemplateTest) TestServiceAccountNamespace() {
+	s.assertTemplateNamespaces("ServiceAccount", "templates/serviceaccount.yaml", nil)
+}
+
 func (s *TemplateTest) TestServiceAccountCanSetCommonLabels() {
 	options := &helm.Options{
 		SetValues: map[string]string{
