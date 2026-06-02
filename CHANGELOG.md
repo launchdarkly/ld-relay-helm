@@ -4,6 +4,13 @@ Change log
 All notable changes to the LaunchDarkly Relay Proxy Helm Chart will be documented in this file. This project adheres to [Semantic Versioning](https://semver.org).
 
 
+## [3.7.0](https://github.com/launchdarkly/ld-relay-helm/compare/3.6.1...3.7.0) (2026-06-02)
+
+
+### Features
+
+* Add explicit namespace support ([#115](https://github.com/launchdarkly/ld-relay-helm/issues/115)) ([90f85fd](https://github.com/launchdarkly/ld-relay-helm/commit/90f85fdb2d4b16cb9d502a2ff19e1a5719a005a2))
+
 ## [3.6.1](https://github.com/launchdarkly/ld-relay-helm/compare/3.6.0...3.6.1) (2026-05-06)
 
 
