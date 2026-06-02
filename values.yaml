@@ -15,8 +15,15 @@ imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
 
-# Overrides the namespace rendered into namespaced resources.
-# When empty, the chart uses the Helm release namespace.
+# Sets metadata.namespace on the chart's namespaced resources. This is mainly
+# useful for GitOps / `helm template` workflows (e.g. Argo CD, Flux, Kustomize)
+# where the namespace must be explicit in the rendered YAML.
+# Leave this empty if you install with `helm install/upgrade --namespace`: Helm
+# already deploys into the release namespace, so setting it has no effect.
+# Do not set this to a namespace that differs from your install namespace --
+# `helm install/upgrade` will fail with a namespace mismatch error, and
+# `helm template | kubectl apply` would deploy the resources into this
+# namespace instead. When empty, the chart uses the Helm release namespace.
 namespaceOverride: ""
 
 # Labels to add to all resources
