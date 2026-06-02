@@ -15,6 +15,10 @@ imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
 
+# Overrides the namespace rendered into namespaced resources.
+# When empty, the chart uses the Helm release namespace.
+namespaceOverride: ""
+
 # Labels to add to all resources
 commonLabels: {}
 

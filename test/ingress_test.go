@@ -6,6 +6,16 @@ import (
 	networkingv1 "k8s.io/api/networking/v1"
 )
 
+func (s *TemplateTest) TestIngressNamespace() {
+	s.assertTemplateNamespaces("Ingress", "templates/ingress.yaml", map[string]string{
+		"ingress.enabled":                    "true",
+		"ingress.hosts[0].host":              "ld-relay.local",
+		"ingress.hosts[0].paths[0].path":     "/",
+		"ingress.hosts[0].paths[0].pathType": "Prefix",
+		"ingress.hosts[0].paths[0].port":     "8030",
+	})
+}
+
 func (s *TemplateTest) TestIngressCanSetCommonLabels() {
 	options := &helm.Options{
 		SetValues: map[string]string{

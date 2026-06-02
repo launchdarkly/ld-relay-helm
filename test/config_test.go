@@ -6,6 +6,10 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
+func (s *TemplateTest) TestConfigNamespace() {
+	s.assertTemplateNamespaces("ConfigMap", "templates/config.yaml", nil)
+}
+
 func (s *TemplateTest) TestConfigNameRespectsFullnameOverride() {
 	options := &helm.Options{
 		SetValues: map[string]string{

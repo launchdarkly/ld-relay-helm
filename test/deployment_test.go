@@ -7,6 +7,10 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
+func (s *TemplateTest) TestDeploymentNamespace() {
+	s.assertTemplateNamespaces("Deployment", "templates/deployment.yaml", nil)
+}
+
 func (s *TemplateTest) TestDeploymentConfigMapRefRespectsFullnameOverride() {
 	options := &helm.Options{
 		SetValues: map[string]string{
@@ -351,11 +355,11 @@ func (s *TemplateTest) TestStartupProbeIsDisabledByDefault() {
 func (s *TemplateTest) TestCanSetStartupProbe() {
 	options := &helm.Options{
 		SetValues: map[string]string{
-			"relay.startupProbe.httpGet.path":            "/status",
-			"relay.startupProbe.httpGet.port":            "api",
-			"relay.startupProbe.initialDelaySeconds":     "5",
-			"relay.startupProbe.periodSeconds":           "10",
-			"relay.startupProbe.failureThreshold":        "30",
+			"relay.startupProbe.httpGet.path":        "/status",
+			"relay.startupProbe.httpGet.port":        "api",
+			"relay.startupProbe.initialDelaySeconds": "5",
+			"relay.startupProbe.periodSeconds":       "10",
+			"relay.startupProbe.failureThreshold":    "30",
 		},
 		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
 	}
