@@ -8,13 +8,6 @@ deployment:
   # Optional rolling update strategy for the deployment.
   # Allows configuring maxSurge and maxUnavailable to control rollout behavior.
   # When unset, Kubernetes applies its default strategy (25% maxSurge / 25% maxUnavailable).
-  #
-  # Example:
-  # strategy:
-  #   type: RollingUpdate
-  #   rollingUpdate:
-  #     maxSurge: 6
-  #     maxUnavailable: 0
   strategy: null
 
 image:
