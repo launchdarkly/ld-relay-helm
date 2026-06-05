@@ -151,6 +151,9 @@ autoscaling:
   maxReplicas: 100
   targetCPUUtilizationPercentage: 80
   targetMemoryUtilizationPercentage: 80
+  # Optional HPA scale behavior. When unset, Kubernetes applies its default
+  # (unlimited scale-up rate, 5-minute scale-down stabilization window).
+  behavior: null
 
 nodeSelector: {}
 
