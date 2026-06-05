@@ -12,6 +12,10 @@ spec:
   selector:
     matchLabels:
       {{- include "ld-relay.selectorLabels" . | nindent 6 }}
+  {{- with .Values.deployment.strategy }}
+  strategy:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   template:
     metadata:
       annotations:

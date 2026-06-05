@@ -747,3 +747,35 @@ func (s *TemplateTest) TestNoInitContainersByDefault() {
 
 	s.Require().Empty(deployment.Spec.Template.Spec.InitContainers)
 }
+
+func (s *TemplateTest) TestRollingUpdateStrategyNotSetByDefault() {
+	options := &helm.Options{
+		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
+	}
+
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/deployment.yaml"})
+	var deployment appsv1.Deployment
+	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
+
+	s.Require().Empty(deployment.Spec.Strategy.Type)
+}
+
+func (s *TemplateTest) TestCanSetRollingUpdateStrategy() {
+	options := &helm.Options{
+		SetValues: map[string]string{
+			"deployment.strategy.type":                          "RollingUpdate",
+			"deployment.strategy.rollingUpdate.maxSurge":        "6",
+			"deployment.strategy.rollingUpdate.maxUnavailable":  "0",
+		},
+		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
+	}
+
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/deployment.yaml"})
+	var deployment appsv1.Deployment
+	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
+
+	s.Require().Equal(appsv1.DeploymentStrategyType("RollingUpdate"), deployment.Spec.Strategy.Type)
+	s.Require().NotNil(deployment.Spec.Strategy.RollingUpdate)
+	s.Require().Equal("6", deployment.Spec.Strategy.RollingUpdate.MaxSurge.String())
+	s.Require().Equal("0", deployment.Spec.Strategy.RollingUpdate.MaxUnavailable.String())
+}
