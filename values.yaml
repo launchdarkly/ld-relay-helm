@@ -4,6 +4,15 @@
 
 replicaCount: 1
 
+deployment:
+  # Optional rolling update strategy for the deployment.
+  # Allows configuring maxSurge and maxUnavailable to control rollout behavior.
+  # When unset, Kubernetes applies its default strategy (25% maxSurge / 25% maxUnavailable).
+  strategy: null
+    # rollingUpdate:
+    #   maxSurge: 1
+    #   maxUnavailable: 0
+
 image:
   # Use the official LaunchDarkly relay proxy image
   repository: launchdarkly/ld-relay
@@ -145,6 +154,22 @@ autoscaling:
   maxReplicas: 100
   targetCPUUtilizationPercentage: 80
   targetMemoryUtilizationPercentage: 80
+  # Optional HPA scale behavior. When unset, Kubernetes applies its default
+  # (unlimited scale-up rate, 5-minute scale-down stabilization window).
+  # NOTE: requires Kubernetes >= 1.18 (rendered into autoscaling/v2 or v2beta2).
+  # Has no valid equivalent on older clusters that fall back to autoscaling/v1.
+  behavior: null
+    # scaleUp:
+    #   policies:
+    #   - type: Pods
+    #     value: 6
+    #     periodSeconds: 120
+    # scaleDown:
+    #   stabilizationWindowSeconds: 300
+    #   policies:
+    #   - type: Percent
+    #     value: 50
+    #     periodSeconds: 60
 
 nodeSelector: {}
 
