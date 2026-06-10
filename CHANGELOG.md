@@ -4,6 +4,13 @@ Change log
 All notable changes to the LaunchDarkly Relay Proxy Helm Chart will be documented in this file. This project adheres to [Semantic Versioning](https://semver.org).
 
 
+## [3.8.0](https://github.com/launchdarkly/ld-relay-helm/compare/3.7.0...3.8.0) (2026-06-10)
+
+
+### Features
+
+* expose deployment rolling update strategy and HPA scale behavior as configurable values ([#117](https://github.com/launchdarkly/ld-relay-helm/issues/117)) ([c3b2259](https://github.com/launchdarkly/ld-relay-helm/commit/c3b22590d9f6c9549c04c9d4128c8b214a30c5b1))
+
 ## [3.7.0](https://github.com/launchdarkly/ld-relay-helm/compare/3.6.1...3.7.0) (2026-06-02)
 
 
