@@ -30,10 +30,10 @@ func (s *TemplateTest) TestHPABehaviorNotSetByDefault() {
 func (s *TemplateTest) TestCanSetHPAScaleUpBehavior() {
 	options := &helm.Options{
 		SetValues: map[string]string{
-			"autoscaling.enabled":                                     "true",
-			"autoscaling.behavior.scaleUp.policies[0].type":           "Pods",
-			"autoscaling.behavior.scaleUp.policies[0].value":          "6",
-			"autoscaling.behavior.scaleUp.policies[0].periodSeconds":  "120",
+			"autoscaling.enabled":                                    "true",
+			"autoscaling.behavior.scaleUp.policies[0].type":          "Pods",
+			"autoscaling.behavior.scaleUp.policies[0].value":         "6",
+			"autoscaling.behavior.scaleUp.policies[0].periodSeconds": "120",
 		},
 		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
 	}
