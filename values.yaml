@@ -153,6 +153,8 @@ autoscaling:
   targetMemoryUtilizationPercentage: 80
   # Optional HPA scale behavior. When unset, Kubernetes applies its default
   # (unlimited scale-up rate, 5-minute scale-down stabilization window).
+  # NOTE: requires Kubernetes >= 1.18 (rendered into autoscaling/v2 or v2beta2).
+  # Has no valid equivalent on older clusters that fall back to autoscaling/v1.
   behavior: null
 
 nodeSelector: {}
