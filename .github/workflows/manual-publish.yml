@@ -35,7 +35,7 @@ jobs:
       contents: write # Needed for publish-gh-pages to upload release assets.
       packages: write # needed for ghcr access
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: ${{ inputs.tag }}
 
