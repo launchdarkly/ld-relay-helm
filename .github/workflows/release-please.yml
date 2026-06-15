@@ -21,7 +21,7 @@ jobs:
           skip-github-pull-request: true
 
       # Need the repository content to be able to create and push a tag.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         if: ${{ steps.release.outputs.release_created == 'true' }}
 
       - name: Create release tag
@@ -55,7 +55,7 @@ jobs:
       contents: write # Needed for publish-gh-pages to upload release assets.
       packages: write # needed for ghcr access
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: ${{ needs.release-please.outputs.tag_name }}
           fetch-depth: 0 # Full history is required for proper changelog generation
