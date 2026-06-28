@@ -760,6 +760,73 @@ func (s *TemplateTest) TestRollingUpdateStrategyNotSetByDefault() {
 	s.Require().Empty(deployment.Spec.Strategy.Type)
 }
 
+func (s *TemplateTest) TestRevisionHistoryLimitNotSetByDefault() {
+	options := &helm.Options{
+		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
+	}
+
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/deployment.yaml"})
+	var deployment appsv1.Deployment
+	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
+
+	s.Require().Nil(deployment.Spec.RevisionHistoryLimit)
+}
+
+func (s *TemplateTest) TestCanSetRevisionHistoryLimit() {
+	options := &helm.Options{
+		SetValues: map[string]string{
+			"deployment.revisionHistoryLimit": "3",
+		},
+		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
+	}
+
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/deployment.yaml"})
+	var deployment appsv1.Deployment
+	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
+
+	s.Require().NotNil(deployment.Spec.RevisionHistoryLimit)
+	s.Require().Equal(int32(3), *deployment.Spec.RevisionHistoryLimit)
+}
+
+func (s *TemplateTest) TestDnsConfigNotSetByDefault() {
+	options := &helm.Options{
+		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
+	}
+
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/deployment.yaml"})
+	var deployment appsv1.Deployment
+	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
+
+	s.Require().Empty(deployment.Spec.Template.Spec.DNSPolicy)
+	s.Require().Nil(deployment.Spec.Template.Spec.DNSConfig)
+}
+
+func (s *TemplateTest) TestCanSetDnsPolicyAndDnsConfig() {
+	options := &helm.Options{
+		SetValues: map[string]string{
+			"pod.dnsPolicy":                 "None",
+			"pod.dnsConfig.nameservers[0]":  "1.1.1.1",
+			"pod.dnsConfig.searches[0]":     "ns1.svc.cluster-domain.example",
+			"pod.dnsConfig.options[0].name": "ndots",
+		},
+		SetStrValues: map[string]string{
+			"pod.dnsConfig.options[0].value": "2",
+		},
+		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
+	}
+
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/deployment.yaml"})
+	var deployment appsv1.Deployment
+	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
+
+	s.Require().Equal(corev1.DNSPolicy("None"), deployment.Spec.Template.Spec.DNSPolicy)
+	s.Require().NotNil(deployment.Spec.Template.Spec.DNSConfig)
+	s.Require().Equal([]string{"1.1.1.1"}, deployment.Spec.Template.Spec.DNSConfig.Nameservers)
+	s.Require().Equal([]string{"ns1.svc.cluster-domain.example"}, deployment.Spec.Template.Spec.DNSConfig.Searches)
+	s.Require().Equal("ndots", deployment.Spec.Template.Spec.DNSConfig.Options[0].Name)
+	s.Require().Equal("2", *deployment.Spec.Template.Spec.DNSConfig.Options[0].Value)
+}
+
 func (s *TemplateTest) TestCanSetRollingUpdateStrategy() {
 	options := &helm.Options{
 		SetValues: map[string]string{
