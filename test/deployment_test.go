@@ -788,6 +788,23 @@ func (s *TemplateTest) TestCanSetRevisionHistoryLimit() {
 	s.Require().Equal(int32(3), *deployment.Spec.RevisionHistoryLimit)
 }
 
+func (s *TemplateTest) TestCanSetRevisionHistoryLimitToZero() {
+	options := &helm.Options{
+		SetValues: map[string]string{
+			"deployment.revisionHistoryLimit": "0",
+		},
+		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
+	}
+
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/deployment.yaml"})
+	var deployment appsv1.Deployment
+	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
+
+	// 0 is a valid value (retain no old ReplicaSets) and must not be treated as unset.
+	s.Require().NotNil(deployment.Spec.RevisionHistoryLimit)
+	s.Require().Equal(int32(0), *deployment.Spec.RevisionHistoryLimit)
+}
+
 func (s *TemplateTest) TestDnsConfigNotSetByDefault() {
 	options := &helm.Options{
 		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
