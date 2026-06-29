@@ -83,6 +83,7 @@ Here's a summary of the available configuration options:
 | autoscaling.targetMemoryUtilizationPercentage | integer | `80`                                                         | Configures memory as an average utilization metrics resource                                             |
 | autoscaling.behavior                          | object  | `null`                                                       | Optional HPA scale behavior (requires Kubernetes >= 1.18)                                                |
 | deployment.strategy                           | object  | `null`                                                       | Optional rolling update strategy for the deployment                                                      |
+| deployment.revisionHistoryLimit               | integer | `null`                                                       | Optional number of old ReplicaSets to retain for rollback (Kubernetes default `10`)                      |
 | nodeSelector                                  | object  | `{}`                                                         | Selector to target node placement for the relay pod                                                      |
 | tolerations                                   | array   | `[]`                                                         | Specify pod tolerations                                                                                  |
 | affinity                                      | object  | `{}`                                                         | Specify pod affinity                                                                                     |
@@ -91,6 +92,8 @@ Here's a summary of the available configuration options:
 | pod.disruptionBudget.maxUnavailable           | string  | `""`                                                         | Maximum number of pods that are unavailable after eviction as number or percentage                       |
 | pod.topologySpreadConstraints                 | array   | `[]`                                                         | Specify the topology spread constrait definitions to apply to the relay deployment                       |
 | pod.priorityClassName                         | string  | `""`                                                         | Specify a PriorityClass for the pod                                                                      |
+| pod.dnsPolicy                                 | string  | `""`                                                         | Optional pod DNS policy (Kubernetes default `ClusterFirst`); set to `None` when supplying a custom dnsConfig |
+| pod.dnsConfig                                 | object  | `{}`                                                         | Optional pod DNS configuration (nameservers, searches, options)                                          |
 
 ## Learn more
 

@@ -12,6 +12,9 @@ deployment:
     # rollingUpdate:
     #   maxSurge: 1
     #   maxUnavailable: 0
+  # Optional number of old ReplicaSets to retain for rollback.
+  # When unset, Kubernetes applies its default (10).
+  revisionHistoryLimit: null
 
 image:
   # Use the official LaunchDarkly relay proxy image
@@ -84,6 +87,18 @@ pod:
   # - maxSkew: 1
   #   topologyKey: topology.kubernetes.io/zone
   #   whenUnsatisfiable: DoNotSchedule
+  # Pod DNS policy. When unset, Kubernetes applies its default ("ClusterFirst").
+  # Set to "None" when supplying a fully custom dnsConfig below.
+  dnsPolicy: ""
+  # Pod DNS configuration. Merged with dnsPolicy per the Kubernetes Pod DNS rules.
+  dnsConfig: {}
+    # nameservers:
+    #   - 1.1.1.1
+    # searches:
+    #   - ns1.svc.cluster-domain.example
+    # options:
+    #   - name: ndots
+    #     value: "2"
 
 # Optional termination grace period in seconds for graceful pod shutdown
 # terminationGracePeriodSeconds: 90
