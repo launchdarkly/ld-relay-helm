@@ -4,6 +4,13 @@ Change log
 All notable changes to the LaunchDarkly Relay Proxy Helm Chart will be documented in this file. This project adheres to [Semantic Versioning](https://semver.org).
 
 
+## [3.9.0](https://github.com/launchdarkly/ld-relay-helm/compare/3.8.0...3.9.0) (2026-06-29)
+
+
+### Features
+
+* expose revisionHistoryLimit and dnsConfig/dnsPolicy as configurable values ([#125](https://github.com/launchdarkly/ld-relay-helm/issues/125)) ([c92136f](https://github.com/launchdarkly/ld-relay-helm/commit/c92136f2c59668295cfc6c2e1c2706e5bbe1cf58))
+
 ## [3.8.0](https://github.com/launchdarkly/ld-relay-helm/compare/3.7.0...3.8.0) (2026-06-10)
 
 
