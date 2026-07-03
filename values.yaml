@@ -203,6 +203,42 @@ relay:
         path: /status
         port: api
 
+  # The relay's /status endpoint ALWAYS returns HTTP 200, even while the relay is
+  # still initializing or when a data source connection is degraded. The health
+  # verdict lives only in the JSON body: the top-level `status` field is "healthy"
+  # only once the relay is fully configured and every environment is connected,
+  # and "degraded" otherwise. A plain httpGet probe therefore cannot tell "ready
+  # to serve flags" from "listener is up but still initializing".
+  #
+  # To gate on the real health state you must parse the body. `startupProbe` is
+  # disabled by default; enabling the exec probe below holds off the liveness and
+  # readiness probes until /status first reports "healthy", so a slow LaunchDarkly
+  # connection on boot will not get the pod killed. The official launchdarkly/ld-relay
+  # image is Alpine-based and ships BusyBox `wget` (it does NOT include curl), so
+  # the check needs no changes to the image.
+  #
+  # CAVEATS before enabling:
+  #   - The command hard-codes http://127.0.0.1:8030. If you change the relay's
+  #     listen port (service.ports[].targetPort), update the URL to match.
+  #   - Under TLS, switch to HTTPS and skip cert verification, e.g.:
+  #       wget --no-check-certificate -qO- https://127.0.0.1:8030/status | grep -q '"status":"healthy"'
+  #   - The same exec block can be applied to `readinessProbe` to pull a pod out
+  #     of service when it reports "degraded". Be careful: /status reports
+  #     "degraded" if ANY single environment is disconnected, so a low
+  #     failureThreshold can make every pod go NotReady at once during a
+  #     transient LaunchDarkly-side blip. Prefer a startupProbe for the
+  #     "wait for healthy on boot" use case.
+  startupProbe: {}
+    # exec:
+    #   command:
+    #     - /bin/sh
+    #     - -c
+    #     - wget -qO- http://127.0.0.1:8030/status | grep -q '"status":"healthy"'
+    # periodSeconds: 3
+    # timeoutSeconds: 2
+    # # ~60s to reach a healthy state before the pod is failed
+    # failureThreshold: 20
+
   lifecycle: []
     # preStop:
     #   exec:

@@ -311,6 +311,40 @@ func (s *TemplateTest) TestCanDisableProbes() {
 	s.Require().Nil(deployment.Spec.Template.Spec.Containers[0].ReadinessProbe)
 }
 
+func (s *TemplateTest) TestStartupProbeDisabledByDefault() {
+	options := &helm.Options{
+		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
+	}
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/deployment.yaml"})
+	var deployment appsv1.Deployment
+	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
+
+	s.Require().Nil(deployment.Spec.Template.Spec.Containers[0].StartupProbe)
+}
+
+func (s *TemplateTest) TestCanSetExecStartupProbe() {
+	options := &helm.Options{
+		SetValues: map[string]string{
+			"relay.startupProbe.exec.command":  "{/bin/sh,-c,wget -qO- http://127.0.0.1:8030/status | grep -q '\"status\":\"healthy\"'}",
+			"relay.startupProbe.periodSeconds": "3",
+			"relay.startupProbe.failureThreshold": "20",
+		},
+		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
+	}
+
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/deployment.yaml"})
+	var deployment appsv1.Deployment
+	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
+
+	startupProbe := deployment.Spec.Template.Spec.Containers[0].StartupProbe
+	s.Require().NotNil(startupProbe)
+	s.Require().Equal("/bin/sh", startupProbe.ProbeHandler.Exec.Command[0])
+	s.Require().Equal("-c", startupProbe.ProbeHandler.Exec.Command[1])
+	s.Require().Equal("wget -qO- http://127.0.0.1:8030/status | grep -q '\"status\":\"healthy\"'", startupProbe.ProbeHandler.Exec.Command[2])
+	s.Require().Equal(int32(3), startupProbe.PeriodSeconds)
+	s.Require().Equal(int32(20), startupProbe.FailureThreshold)
+}
+
 func (s *TemplateTest) TestCanSetSingleTopologySpreadConstraint() {
 	options := &helm.Options{
 		SetValues: map[string]string{
