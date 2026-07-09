@@ -54,3 +54,32 @@ func TestGoldenIngressWithBaseConfiguration(t *testing.T) {
 		},
 	})
 }
+
+func TestGoldenHTTPRouteWithBaseConfiguration(t *testing.T) {
+	t.Parallel()
+
+	chartPath, err := filepath.Abs("../")
+	require.NoError(t, err)
+
+	suite.Run(t, &TemplateGoldenTest{
+		ChartPath:      chartPath,
+		Release:        "ld-relay-test",
+		Namespace:      goldenNamespace,
+		GoldenFileName: "httproute",
+		Templates:      []string{"templates/httproute.yaml"},
+		SetValues: map[string]string{
+			"httpRoute.enabled":                 "true",
+			"httpRoute.parentRefs[0].name":      "my-gateway",
+			"httpRoute.parentRefs[0].namespace": "gateway-infra",
+			"httpRoute.hostnames[0]":            "ld-relay.local",
+
+			"httpRoute.rules[0].matches[0].path.type":  "PathPrefix",
+			"httpRoute.rules[0].matches[0].path.value": "/api",
+			"httpRoute.rules[0].port":                  "8030",
+
+			"httpRoute.rules[1].matches[0].path.type":  "PathPrefix",
+			"httpRoute.rules[1].matches[0].path.value": "/prometheus",
+			"httpRoute.rules[1].port":                  "8031",
+		},
+	})
+}

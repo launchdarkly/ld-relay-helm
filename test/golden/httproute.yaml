@@ -1,0 +1,35 @@
+---
+# Source: ld-relay/templates/httproute.yaml
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: ld-relay-test
+  namespace: ld-relay-test-ns
+  labels:
+    app.kubernetes.io/name: ld-relay
+    app.kubernetes.io/instance: ld-relay-test
+    app.kubernetes.io/version: "8.19.1"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  parentRefs:
+    - name: my-gateway
+      namespace: gateway-infra
+  hostnames:
+    - "ld-relay.local"
+  rules:
+    -
+      matches:
+        - path:
+            type: PathPrefix
+            value: /api
+      backendRefs:
+        - name: ld-relay-test
+          port: 8030
+    -
+      matches:
+        - path:
+            type: PathPrefix
+            value: /prometheus
+      backendRefs:
+        - name: ld-relay-test
+          port: 8031
