@@ -75,6 +75,11 @@ Here's a summary of the available configuration options:
 | ingress.annotations                           | object  | `{}`                                                         | Ingress annotations                                                                                      |
 | ingress.hosts                                 | array   | `[]`                                                         | List of host rules                                                                                       |
 | ingress.tls                                   | array   | `[]`                                                         | Ingress TLS configuration                                                                                |
+| httpRoute.enabled                             | bool    | `false`                                                      | Enables Gateway API HTTPRoute                                                                            |
+| httpRoute.annotations                         | object  | `{}`                                                         | HTTPRoute annotations                                                                                    |
+| httpRoute.parentRefs                          | array   | `[]`                                                         | List of Gateway parent references this route attaches to                                                 |
+| httpRoute.hostnames                           | array   | `[]`                                                         | List of hostnames this route matches                                                                     |
+| httpRoute.rules                               | array   | `[]`                                                         | List of routing rules (path matches + backend port); routes to the chart's Service                       |
 | resources                                     | object  | `{}`                                                         | Resource requirements for the relay container                                                            |
 | autoscaling.enabled                           | bool    | `false`                                                      | Enables HorizontalPodAutoscaler                                                                          |
 | autoscaling.minReplicas                       | integer | `1`                                                          | Sets minimum number of running replicas                                                                  |
@@ -94,6 +99,8 @@ Here's a summary of the available configuration options:
 | pod.priorityClassName                         | string  | `""`                                                         | Specify a PriorityClass for the pod                                                                      |
 | pod.dnsPolicy                                 | string  | `""`                                                         | Optional pod DNS policy (Kubernetes default `ClusterFirst`); set to `None` when supplying a custom dnsConfig |
 | pod.dnsConfig                                 | object  | `{}`                                                         | Optional pod DNS configuration (nameservers, searches, options)                                          |
+
+`httpRoute` requires the [Gateway API](https://gateway-api.sigs.k8s.io/) CRDs (`gateway.networking.k8s.io`) to already be installed in the cluster, along with a `Gateway` resource for the route to attach to. Use either `ingress` or `httpRoute`, not both.
 
 ## Learn more
 
