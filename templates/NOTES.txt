@@ -6,6 +6,14 @@
   http{{ if $.Values.ingress.tls }}s{{ end }}://{{ $host.host }}{{ .path }}
   {{- end }}
 {{- end }}
+{{- else if .Values.httpRoute.enabled }}
+{{- range $hostname := .Values.httpRoute.hostnames }}
+  {{- range $.Values.httpRoute.rules }}
+    {{- range .matches }}
+  http://{{ $hostname }}{{ .path.value }}
+    {{- end }}
+  {{- end }}
+{{- end }}
 {{- else if contains "NodePort" .Values.service.type }}
   export NODE_PORT=$(kubectl get --namespace {{ $namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "ld-relay.fullname" . }})
   export NODE_IP=$(kubectl get nodes --namespace {{ $namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")

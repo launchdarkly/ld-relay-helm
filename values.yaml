@@ -151,6 +151,32 @@ ingress:
   #    hosts:
   #      - chart-example.local
 
+httpRoute:
+  enabled: false
+  annotations: {}
+  # Gateway(s) this HTTPRoute attaches to.
+  parentRefs: []
+  #   - name: my-gateway
+  #     namespace: gateway-infra
+  #     sectionName: https
+  # Hostnames this route matches. If unset, the route matches based on the
+  # Gateway's listener hostname.
+  hostnames: []
+  #   - ld-relay.local
+  # Exposing the relay allows for access outside the cluster
+  rules: []
+  #   - matches:
+  #       - path:
+  #           type: PathPrefix
+  #           value: /
+  #     port: 8030
+  # You may optionally need to expose the Prometheus endpoint as well
+  #   - matches:
+  #       - path:
+  #           type: PathPrefix
+  #           value: /prometheus
+  #     port: 8031
+
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
