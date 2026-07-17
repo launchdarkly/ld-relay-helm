@@ -11,7 +11,11 @@
 {{- range $hostname := .Values.httpRoute.hostnames }}
   {{- range $.Values.httpRoute.rules }}
     {{- range .matches }}
-      {{- $urls = append $urls (printf "http://%s%s" $hostname .path.value) }}
+      {{- with .path }}
+        {{- with .value }}
+          {{- $urls = append $urls (printf "http://%s%s" $hostname .) }}
+        {{- end }}
+      {{- end }}
     {{- end }}
   {{- end }}
 {{- end }}
@@ -19,6 +23,7 @@
 {{- range $urls }}
   {{ . }}
 {{- end }}
+  NOTE: the scheme above is a guess -- it depends on the listener your Gateway routes through (e.g. https for a TLS listener).
 {{- else }}
   Run 'kubectl get --namespace {{ $namespace }} httproute {{ include "ld-relay.fullname" . }}' to find the hostname(s) configured on your Gateway.
 {{- end }}

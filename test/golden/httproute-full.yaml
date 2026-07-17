@@ -14,14 +14,28 @@ spec:
   parentRefs:
     - name: my-gateway
       namespace: gateway-infra
+      port: 443
+      sectionName: https
   hostnames:
     - ld-relay.local
   rules:
     -
       matches:
-        - path:
+        - headers:
+          - name: X-Env
+            value: production
+          method: GET
+          path:
             type: PathPrefix
             value: /api
+      filters:
+        - requestHeaderModifier:
+            set:
+            - name: X-Relay
+              value: relay-proxy
+          type: RequestHeaderModifier
+      timeouts:
+        request: 5s
       backendRefs:
         - name: ld-relay-test
           port: 8030
@@ -29,7 +43,8 @@ spec:
       matches:
         - path:
             type: PathPrefix
-            value: /prometheus
+            value: /
       backendRefs:
         - name: ld-relay-test
-          port: 8031
+          port: 8030
+          weight: 100

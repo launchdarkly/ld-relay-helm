@@ -83,3 +83,46 @@ func TestGoldenHTTPRouteWithBaseConfiguration(t *testing.T) {
 		},
 	})
 }
+
+func TestGoldenHTTPRouteWithFullSchema(t *testing.T) {
+	t.Parallel()
+
+	chartPath, err := filepath.Abs("../")
+	require.NoError(t, err)
+
+	suite.Run(t, &TemplateGoldenTest{
+		ChartPath:      chartPath,
+		Release:        "ld-relay-test",
+		Namespace:      goldenNamespace,
+		GoldenFileName: "httproute-full",
+		Templates:      []string{"templates/httproute.yaml"},
+		SetValues: map[string]string{
+			"httpRoute.enabled":                   "true",
+			"httpRoute.parentRefs[0].name":        "my-gateway",
+			"httpRoute.parentRefs[0].namespace":   "gateway-infra",
+			"httpRoute.parentRefs[0].sectionName": "https",
+			"httpRoute.parentRefs[0].port":        "443",
+			"httpRoute.hostnames[0]":              "ld-relay.local",
+
+			// Rich match (path + headers + method), a filter, and timeouts,
+			// all passed through verbatim; backend defaulted from `port`.
+			"httpRoute.rules[0].matches[0].path.type":                          "PathPrefix",
+			"httpRoute.rules[0].matches[0].path.value":                         "/api",
+			"httpRoute.rules[0].matches[0].headers[0].name":                    "X-Env",
+			"httpRoute.rules[0].matches[0].headers[0].value":                   "production",
+			"httpRoute.rules[0].matches[0].method":                             "GET",
+			"httpRoute.rules[0].filters[0].type":                               "RequestHeaderModifier",
+			"httpRoute.rules[0].filters[0].requestHeaderModifier.set[0].name":  "X-Relay",
+			"httpRoute.rules[0].filters[0].requestHeaderModifier.set[0].value": "relay-proxy",
+			"httpRoute.rules[0].timeouts.request":                              "5s",
+			"httpRoute.rules[0].port":                                          "8030",
+
+			// Explicit weighted backend override.
+			"httpRoute.rules[1].matches[0].path.type":  "PathPrefix",
+			"httpRoute.rules[1].matches[0].path.value": "/",
+			"httpRoute.rules[1].backendRefs[0].name":   "ld-relay-test",
+			"httpRoute.rules[1].backendRefs[0].port":   "8030",
+			"httpRoute.rules[1].backendRefs[0].weight": "100",
+		},
+	})
+}
