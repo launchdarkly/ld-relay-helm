@@ -14,34 +14,36 @@ metadata:
 spec:
   {{- with .Values.httpRoute.parentRefs }}
   parentRefs:
-    {{- range . }}
-    - name: {{ .name }}
-      {{- with .namespace }}
-      namespace: {{ . }}
-      {{- end }}
-      {{- with .sectionName }}
-      sectionName: {{ . }}
-      {{- end }}
-    {{- end }}
+    {{- toYaml . | nindent 4 }}
   {{- end }}
   {{- with .Values.httpRoute.hostnames }}
   hostnames:
-    {{- range . }}
-    - {{ . | quote }}
-    {{- end }}
+    {{- toYaml . | nindent 4 }}
   {{- end }}
   rules:
     {{- range .Values.httpRoute.rules }}
+    {{- if not (or .port .backendRefs) }}
+      {{- fail "httpRoute.rules[]: each rule needs a `port` (routes to the chart Service) or an explicit `backendRefs`" }}
+    {{- end }}
     - {{- with .matches }}
       matches:
-        {{- range . }}
-        - path:
-            type: {{ .path.type }}
-            value: {{ .path.value }}
-        {{- end }}
+        {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- with .filters }}
+      filters:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .timeouts }}
+      timeouts:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .backendRefs }}
+      backendRefs:
+        {{- toYaml .backendRefs | nindent 8 }}
+      {{- else }}
       backendRefs:
         - name: {{ $fullName }}
-          port: {{ .port }}
+          port: {{ .port | int }}
+      {{- end }}
     {{- end }}
 {{- end }}

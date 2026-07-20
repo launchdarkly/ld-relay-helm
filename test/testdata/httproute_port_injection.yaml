@@ -1,0 +1,11 @@
+# Regression fixture: a string `port` carrying a YAML-injection payload (a
+# newline plus a fake sibling key). The template must coerce `port` to an
+# integer so the payload cannot inject keys into the rendered backendRef.
+httpRoute:
+  enabled: true
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      port: "8030\n          injected: pwned"

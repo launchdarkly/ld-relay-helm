@@ -154,16 +154,32 @@ ingress:
 httpRoute:
   enabled: false
   annotations: {}
-  # Gateway(s) this HTTPRoute attaches to.
+  # Gateway(s) this HTTPRoute attaches to. Rendered as-is, so the full Gateway
+  # API ParentReference schema is available (name, namespace, sectionName, port).
   parentRefs: []
   #   - name: my-gateway
   #     namespace: gateway-infra
   #     sectionName: https
+  #     port: 443
   # Hostnames this route matches. If unset, the route matches based on the
   # Gateway's listener hostname.
   hostnames: []
   #   - ld-relay.local
-  # Exposing the relay allows for access outside the cluster
+  # Routing rules. `matches`, `filters`, and `timeouts` are passed through
+  # verbatim, so the full Gateway API HTTPRoute rule schema is available.
+  # Exposing the relay allows for access outside the cluster.
+  #
+  # Backend selection, per rule:
+  #   - Set `port` to route to this chart's own Service (safe default).
+  #   - Or set `backendRefs` explicitly for weighting, mirroring, or an external
+  #     backend. `backendRefs` takes precedence: if you set both, `port` is
+  #     ignored. Unlike `port`, an explicit `backendRefs` can point at any
+  #     Service (including another namespace), so the relay's hostname could be
+  #     routed somewhere other than this relay -- use it deliberately.
+  #
+  # A rule with no `matches` matches EVERY request (Gateway API default), which
+  # publishes the entire relay -- including admin/metrics endpoints -- on the
+  # route's hostname. Add an explicit `matches` unless you intend a catch-all.
   rules: []
   #   - matches:
   #       - path:
@@ -176,6 +192,34 @@ httpRoute:
   #           type: PathPrefix
   #           value: /prometheus
   #     port: 8031
+  # The full rule schema is supported -- header/method/query matches, filters,
+  # and timeouts:
+  #   - matches:
+  #       - path:
+  #           type: PathPrefix
+  #           value: /api
+  #         headers:
+  #           - name: X-Env
+  #             value: production
+  #         method: GET
+  #     filters:
+  #       - type: RequestHeaderModifier
+  #         requestHeaderModifier:
+  #           set:
+  #             - name: X-Relay
+  #               value: relay-proxy
+  #     timeouts:
+  #       request: 5s
+  #     port: 8030
+  # Or take full control of the backend (traffic splitting, mirroring):
+  #   - matches:
+  #       - path:
+  #           type: PathPrefix
+  #           value: /
+  #     backendRefs:
+  #       - name: ld-relay
+  #         port: 8030
+  #         weight: 100
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
