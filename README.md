@@ -75,6 +75,16 @@ Here's a summary of the available configuration options:
 | ingress.annotations                           | object  | `{}`                                                         | Ingress annotations                                                                                      |
 | ingress.hosts                                 | array   | `[]`                                                         | List of host rules                                                                                       |
 | ingress.tls                                   | array   | `[]`                                                         | Ingress TLS configuration                                                                                |
+| httpRoute.enabled                             | bool    | `false`                                                      | Enables Gateway API HTTPRoute                                                                            |
+| httpRoute.annotations                         | object  | `{}`                                                         | HTTPRoute annotations                                                                                    |
+| httpRoute.parentRefs                          | array   | `[]`                                                         | List of Gateway parent references this route attaches to (full ParentReference schema; rendered as-is)   |
+| httpRoute.hostnames                           | array   | `[]`                                                         | List of hostnames this route matches                                                                     |
+| httpRoute.rules                               | array   | `[]`                                                         | List of routing rules; see the fields below                                                              |
+| httpRoute.rules[].matches                     | array   | `[]`                                                         | Full Gateway API match schema (path, headers, method, queryParams); rendered as-is                       |
+| httpRoute.rules[].filters                     | array   | `[]`                                                         | Full Gateway API filter schema (header modifiers, redirect, URL rewrite, mirror); rendered as-is         |
+| httpRoute.rules[].timeouts                    | object  | `{}`                                                         | Gateway API timeouts (request, backendRequest); rendered as-is                                           |
+| httpRoute.rules[].port                        | integer | `nil`                                                        | Convenience: routes the rule's backend to the chart's Service on this port                               |
+| httpRoute.rules[].backendRefs                 | array   | `[]`                                                         | Explicit backends (weighting, mirroring, external); overrides the `port` convenience when set            |
 | resources                                     | object  | `{}`                                                         | Resource requirements for the relay container                                                            |
 | autoscaling.enabled                           | bool    | `false`                                                      | Enables HorizontalPodAutoscaler                                                                          |
 | autoscaling.minReplicas                       | integer | `1`                                                          | Sets minimum number of running replicas                                                                  |
@@ -94,6 +104,10 @@ Here's a summary of the available configuration options:
 | pod.priorityClassName                         | string  | `""`                                                         | Specify a PriorityClass for the pod                                                                      |
 | pod.dnsPolicy                                 | string  | `""`                                                         | Optional pod DNS policy (Kubernetes default `ClusterFirst`); set to `None` when supplying a custom dnsConfig |
 | pod.dnsConfig                                 | object  | `{}`                                                         | Optional pod DNS configuration (nameservers, searches, options)                                          |
+
+`httpRoute` requires the [Gateway API](https://gateway-api.sigs.k8s.io/) CRDs (`gateway.networking.k8s.io`) to already be installed in the cluster, along with a `Gateway` resource for the route to attach to. Use either `ingress` or `httpRoute`, not both.
+
+For each rule, set `port` to route to this chart's Service, or set `backendRefs` explicitly. `backendRefs` takes precedence over `port` when both are given, and (unlike `port`) can target any Service, including another namespace. A rule with no `matches` matches every request and publishes the entire relay -- including admin/metrics endpoints -- on the route's hostname, so add explicit `matches` unless a catch-all is intended.
 
 ## Learn more
 

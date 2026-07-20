@@ -1,0 +1,49 @@
+{{- if .Values.httpRoute.enabled -}}
+{{- $fullName := include "ld-relay.fullname" . -}}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ $fullName }}
+  namespace: {{ include "ld-relay.namespace" . }}
+  labels:
+    {{- include "ld-relay.labels" . | nindent 4 }}
+  {{- with .Values.httpRoute.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- with .Values.httpRoute.parentRefs }}
+  parentRefs:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.httpRoute.hostnames }}
+  hostnames:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  rules:
+    {{- range .Values.httpRoute.rules }}
+    {{- if not (or .port .backendRefs) }}
+      {{- fail "httpRoute.rules[]: each rule needs a `port` (routes to the chart Service) or an explicit `backendRefs`" }}
+    {{- end }}
+    - {{- with .matches }}
+      matches:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .filters }}
+      filters:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .timeouts }}
+      timeouts:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .backendRefs }}
+      backendRefs:
+        {{- toYaml .backendRefs | nindent 8 }}
+      {{- else }}
+      backendRefs:
+        - name: {{ $fullName }}
+          port: {{ .port | int }}
+      {{- end }}
+    {{- end }}
+{{- end }}

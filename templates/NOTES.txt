@@ -6,6 +6,27 @@
   http{{ if $.Values.ingress.tls }}s{{ end }}://{{ $host.host }}{{ .path }}
   {{- end }}
 {{- end }}
+{{- else if .Values.httpRoute.enabled }}
+{{- $urls := list }}
+{{- range $hostname := .Values.httpRoute.hostnames }}
+  {{- range $.Values.httpRoute.rules }}
+    {{- range .matches }}
+      {{- with .path }}
+        {{- with .value }}
+          {{- $urls = append $urls (printf "http://%s%s" $hostname .) }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+{{- if $urls }}
+{{- range $urls }}
+  {{ . }}
+{{- end }}
+  NOTE: the scheme above is a guess -- it depends on the listener your Gateway routes through (e.g. https for a TLS listener).
+{{- else }}
+  Run 'kubectl get --namespace {{ $namespace }} httproute {{ include "ld-relay.fullname" . }}' to find the hostname(s) configured on your Gateway.
+{{- end }}
 {{- else if contains "NodePort" .Values.service.type }}
   export NODE_PORT=$(kubectl get --namespace {{ $namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "ld-relay.fullname" . }})
   export NODE_IP=$(kubectl get nodes --namespace {{ $namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
