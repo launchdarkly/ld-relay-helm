@@ -65,16 +65,36 @@ jobs:
             echo "needed=true" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Check for an existing branch
+      - name: Check for existing work
         if: steps.version.outputs.needed == 'true'
         id: existing
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CURRENT: ${{ steps.version.outputs.current }}
+          BRANCH: ${{ steps.version.outputs.branch }}
         run: |
-          if git ls-remote --exit-code origin "refs/heads/${{ steps.version.outputs.branch }}" >/dev/null 2>&1; then
-            echo "Branch ${{ steps.version.outputs.branch }} already exists."
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "skip=false" >> "$GITHUB_OUTPUT"
-          fi
+          # Key this on the PR, not on the branch. A run that pushed the branch
+          # and then failed before `gh pr create` has to be able to finish the
+          # job next time, which a branch-existence check would block forever.
+          state=$(gh pr list --head "$BRANCH" --state all --limit 1 --json state --jq '.[0].state // ""')
+
+          case "$state" in
+            OPEN)
+              echo "PR for ${BRANCH} is already open. Nothing to do."
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+              ;;
+            CLOSED)
+              echo "::warning::A PR for ${BRANCH} was closed without merging. Someone declined this bump, so leaving it alone."
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+              ;;
+            MERGED)
+              echo "::warning::A PR for ${BRANCH} is merged, but Chart.yaml still reads ${CURRENT}. Reverted? A human should look."
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+              ;;
+            *)
+              echo "skip=false" >> "$GITHUB_OUTPUT"
+              ;;
+          esac
 
       - uses: actions/setup-go@v6
         if: steps.version.outputs.needed == 'true' && steps.existing.outputs.skip == 'false'
@@ -105,7 +125,11 @@ jobs:
 
           git checkout -b "$BRANCH"
           git commit --all --message "$title"
-          git push origin "$BRANCH"
+
+          # --force, because reaching this step means no PR exists for this
+          # branch: either it is new, or a previous run left it behind before it
+          # got to `gh pr create` and its contents are now stale.
+          git push --force origin "HEAD:refs/heads/${BRANCH}"
 
           gh pr create \
             --base main \
