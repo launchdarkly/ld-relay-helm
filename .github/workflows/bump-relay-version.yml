@@ -13,6 +13,13 @@ jobs:
   bump:
     runs-on: ubuntu-latest
 
+    # Not cosmetic: an implicit `run:` is `bash -e`, without pipefail. Naming
+    # the shell gives every step `-eo pipefail`, so a failed `gh` call cannot be
+    # masked by a later stage of the pipe exiting 0.
+    defaults:
+      run:
+        shell: bash
+
     steps:
       - uses: actions/checkout@v7
 
@@ -24,15 +31,17 @@ jobs:
           current=$(grep -oP '(?<=^appVersion: ")[^"]+' Chart.yaml)
           major=${current%%.*}
 
-          # Only follow the major the chart is already on. A new relay major is
-          # a breaking change and needs a human.
-          latest=$(gh release list --repo launchdarkly/ld-relay \
+          releases=$(gh release list --repo launchdarkly/ld-relay \
             --exclude-pre-releases --exclude-drafts --limit 50 \
-            --json tagName --jq '.[].tagName' \
-            | sed 's/^v//' \
+            --json tagName --jq '.[].tagName')
+
+          # Only follow the major the chart is already on. A new relay major is
+          # a breaking change and needs a human. Matching nothing here is data,
+          # not an error, so it is the one pipeline allowed to exit non-zero.
+          latest=$(sed 's/^v//' <<<"$releases" \
             | grep -E "^${major}\." \
             | sort -V \
-            | tail -1)
+            | tail -1 || true)
 
           echo "current=${current}" >> "$GITHUB_OUTPUT"
           echo "latest=${latest}" >> "$GITHUB_OUTPUT"
