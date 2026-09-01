@@ -1,0 +1,147 @@
+name: Bump relay proxy version
+
+on:
+  schedule:
+    - cron: '0 13 * * 1' # Mondays at 13:00 UTC.
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+
+    # Not cosmetic: an implicit `run:` is `bash -e`, without pipefail. Naming
+    # the shell gives every step `-eo pipefail`, so a failed `gh` call cannot be
+    # masked by a later stage of the pipe exiting 0.
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Determine target version
+        id: version
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          current=$(grep -oP '(?<=^appVersion: ")[^"]+' Chart.yaml)
+          major=${current%%.*}
+
+          releases=$(gh release list --repo launchdarkly/ld-relay \
+            --exclude-pre-releases --exclude-drafts --limit 50 \
+            --json tagName --jq '.[].tagName')
+
+          # Only follow the major the chart is already on. A new relay major is
+          # a breaking change and needs a human. Matching nothing here is data,
+          # not an error, so it is the one pipeline allowed to exit non-zero.
+          latest=$(sed 's/^v//' <<<"$releases" \
+            | grep -E "^${major}\." \
+            | sort -V \
+            | tail -1 || true)
+
+          echo "current=${current}" >> "$GITHUB_OUTPUT"
+          echo "latest=${latest}" >> "$GITHUB_OUTPUT"
+          echo "branch=bump-relay-${latest}" >> "$GITHUB_OUTPUT"
+
+          # Only ever bump forward. A chart pinned ahead of the newest release,
+          # or a release window that holds no same-major entry, must not rewrite
+          # Chart.yaml downward.
+          highest=$(printf '%s\n%s\n' "$current" "$latest" | sort -V | tail -1)
+
+          if [[ -z "$latest" ]]; then
+            echo "::warning::Found no non-prerelease ${major}.x release. Widen --limit if relay has moved on to a newer major."
+            echo "needed=false" >> "$GITHUB_OUTPUT"
+          elif [[ "$latest" == "$current" ]]; then
+            echo "Chart is already on ${current}. Nothing to do."
+            echo "needed=false" >> "$GITHUB_OUTPUT"
+          elif [[ "$highest" != "$latest" ]]; then
+            echo "::warning::Newest ${major}.x release is ${latest}, behind the chart's ${current}. Refusing to downgrade."
+            echo "needed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "needed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check for existing work
+        if: steps.version.outputs.needed == 'true'
+        id: existing
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CURRENT: ${{ steps.version.outputs.current }}
+          BRANCH: ${{ steps.version.outputs.branch }}
+        run: |
+          # Key this on the PR, not on the branch. A run that pushed the branch
+          # and then failed before `gh pr create` has to be able to finish the
+          # job next time, which a branch-existence check would block forever.
+          state=$(gh pr list --head "$BRANCH" --state all --limit 1 --json state --jq '.[0].state // ""')
+
+          case "$state" in
+            OPEN)
+              echo "PR for ${BRANCH} is already open. Nothing to do."
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+              ;;
+            CLOSED)
+              echo "::warning::A PR for ${BRANCH} was closed without merging. Someone declined this bump, so leaving it alone."
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+              ;;
+            MERGED)
+              echo "::warning::A PR for ${BRANCH} is merged, but Chart.yaml still reads ${CURRENT}. Reverted? A human should look."
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+              ;;
+            *)
+              echo "skip=false" >> "$GITHUB_OUTPUT"
+              ;;
+          esac
+
+      - uses: actions/setup-go@v6
+        if: steps.version.outputs.needed == 'true' && steps.existing.outputs.skip == 'false'
+        with:
+          go-version-file: go.mod
+
+      - uses: azure/setup-helm@9bc31f4ebc9c6b171d7bfbaa5d006ae7abdb4310 # v5.0.1
+        if: steps.version.outputs.needed == 'true' && steps.existing.outputs.skip == 'false'
+
+      - name: Bump appVersion and regenerate golden files
+        if: steps.version.outputs.needed == 'true' && steps.existing.outputs.skip == 'false'
+        run: |
+          sed -i 's/^appVersion: ".*"$/appVersion: "${{ steps.version.outputs.latest }}"/' Chart.yaml
+          make update-golden-files
+
+      - name: Open pull request
+        if: steps.version.outputs.needed == 'true' && steps.existing.outputs.skip == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CURRENT: ${{ steps.version.outputs.current }}
+          LATEST: ${{ steps.version.outputs.latest }}
+          BRANCH: ${{ steps.version.outputs.branch }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          title="fix: Bump default relay proxy version from ${CURRENT} to ${LATEST}"
+
+          git checkout -b "$BRANCH"
+          git commit --all --message "$title"
+
+          # --force, because reaching this step means no PR exists for this
+          # branch: either it is new, or a previous run left it behind before it
+          # got to `gh pr create` and its contents are now stale.
+          git push --force origin "HEAD:refs/heads/${BRANCH}"
+
+          gh pr create \
+            --base main \
+            --head "$BRANCH" \
+            --title "$title" \
+            --body "$(cat <<EOF
+          ## Summary
+
+          Bumps the chart's default relay proxy version from \`${CURRENT}\` to \`${LATEST}\`, and regenerates the golden files that embed it.
+
+          Release notes: https://github.com/launchdarkly/ld-relay/releases/tag/v${LATEST}
+
+          Opened automatically by \`.github/workflows/bump-relay-version.yml\`.
+          EOF
+          )"
