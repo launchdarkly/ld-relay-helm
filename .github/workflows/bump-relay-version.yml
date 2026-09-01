@@ -38,8 +38,19 @@ jobs:
           echo "latest=${latest}" >> "$GITHUB_OUTPUT"
           echo "branch=bump-relay-${latest}" >> "$GITHUB_OUTPUT"
 
-          if [[ -z "$latest" || "$current" == "$latest" ]]; then
-            echo "Chart is on ${current}, newest ${major}.x release is ${latest:-none}. Nothing to do."
+          # Only ever bump forward. A chart pinned ahead of the newest release,
+          # or a release window that holds no same-major entry, must not rewrite
+          # Chart.yaml downward.
+          highest=$(printf '%s\n%s\n' "$current" "$latest" | sort -V | tail -1)
+
+          if [[ -z "$latest" ]]; then
+            echo "::warning::Found no non-prerelease ${major}.x release. Widen --limit if relay has moved on to a newer major."
+            echo "needed=false" >> "$GITHUB_OUTPUT"
+          elif [[ "$latest" == "$current" ]]; then
+            echo "Chart is already on ${current}. Nothing to do."
+            echo "needed=false" >> "$GITHUB_OUTPUT"
+          elif [[ "$highest" != "$latest" ]]; then
+            echo "::warning::Newest ${major}.x release is ${latest}, behind the chart's ${current}. Refusing to downgrade."
             echo "needed=false" >> "$GITHUB_OUTPUT"
           else
             echo "needed=true" >> "$GITHUB_OUTPUT"
