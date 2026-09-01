@@ -1,0 +1,103 @@
+name: Bump relay proxy version
+
+on:
+  schedule:
+    - cron: '0 13 * * 1' # Mondays at 13:00 UTC.
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Determine target version
+        id: version
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          current=$(grep -oP '(?<=^appVersion: ")[^"]+' Chart.yaml)
+          major=${current%%.*}
+
+          # Only follow the major the chart is already on. A new relay major is
+          # a breaking change and needs a human.
+          latest=$(gh release list --repo launchdarkly/ld-relay \
+            --exclude-pre-releases --exclude-drafts --limit 50 \
+            --json tagName --jq '.[].tagName' \
+            | sed 's/^v//' \
+            | grep -E "^${major}\." \
+            | sort -V \
+            | tail -1)
+
+          echo "current=${current}" >> "$GITHUB_OUTPUT"
+          echo "latest=${latest}" >> "$GITHUB_OUTPUT"
+          echo "branch=bump-relay-${latest}" >> "$GITHUB_OUTPUT"
+
+          if [[ -z "$latest" || "$current" == "$latest" ]]; then
+            echo "Chart is on ${current}, newest ${major}.x release is ${latest:-none}. Nothing to do."
+            echo "needed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "needed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check for an existing branch
+        if: steps.version.outputs.needed == 'true'
+        id: existing
+        run: |
+          if git ls-remote --exit-code origin "refs/heads/${{ steps.version.outputs.branch }}" >/dev/null 2>&1; then
+            echo "Branch ${{ steps.version.outputs.branch }} already exists."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/setup-go@v6
+        if: steps.version.outputs.needed == 'true' && steps.existing.outputs.skip == 'false'
+        with:
+          go-version-file: go.mod
+
+      - uses: azure/setup-helm@9bc31f4ebc9c6b171d7bfbaa5d006ae7abdb4310 # v5.0.1
+        if: steps.version.outputs.needed == 'true' && steps.existing.outputs.skip == 'false'
+
+      - name: Bump appVersion and regenerate golden files
+        if: steps.version.outputs.needed == 'true' && steps.existing.outputs.skip == 'false'
+        run: |
+          sed -i 's/^appVersion: ".*"$/appVersion: "${{ steps.version.outputs.latest }}"/' Chart.yaml
+          make update-golden-files
+
+      - name: Open pull request
+        if: steps.version.outputs.needed == 'true' && steps.existing.outputs.skip == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CURRENT: ${{ steps.version.outputs.current }}
+          LATEST: ${{ steps.version.outputs.latest }}
+          BRANCH: ${{ steps.version.outputs.branch }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          title="fix: Bump default relay proxy version from ${CURRENT} to ${LATEST}"
+
+          git checkout -b "$BRANCH"
+          git commit --all --message "$title"
+          git push origin "$BRANCH"
+
+          gh pr create \
+            --base main \
+            --head "$BRANCH" \
+            --title "$title" \
+            --body "$(cat <<EOF
+          ## Summary
+
+          Bumps the chart's default relay proxy version from \`${CURRENT}\` to \`${LATEST}\`, and regenerates the golden files that embed it.
+
+          Release notes: https://github.com/launchdarkly/ld-relay/releases/tag/v${LATEST}
+
+          Opened automatically by \`.github/workflows/bump-relay-version.yml\`.
+          EOF
+          )"
