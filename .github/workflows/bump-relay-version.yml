@@ -96,7 +96,7 @@ jobs:
               ;;
           esac
 
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         if: steps.version.outputs.needed == 'true' && steps.existing.outputs.skip == 'false'
         with:
           go-version-file: go.mod
