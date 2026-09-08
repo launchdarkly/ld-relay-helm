@@ -237,6 +237,10 @@ autoscaling:
   enabled: false
   minReplicas: 1
   maxReplicas: 100
+  # When none of targetCPUUtilizationPercentage, targetMemoryUtilizationPercentage
+  # or additionalMetrics is set, the chart renders 80% average CPU utilization
+  # explicitly. That is the same metric the API server would default an empty
+  # spec.metrics to, just visible in the manifest instead of implied.
   targetCPUUtilizationPercentage: 80
   targetMemoryUtilizationPercentage: 80
   # Optional HPA scale behavior. When unset, Kubernetes applies its default
@@ -258,6 +262,8 @@ autoscaling:
   # Extra HPA metrics appended verbatim to spec.metrics, e.g. to scale on an
   # External or Pods metric (such as a Datadog-backed DatadogMetric) alongside
   # or instead of CPU/memory.
+  # NOTE: requires Kubernetes >= 1.12 (rendered into autoscaling/v2 or v2beta2).
+  # Only Resource metrics exist on older clusters that fall back to autoscaling/v1.
   additionalMetrics: []
     # - type: External
     #   external:
