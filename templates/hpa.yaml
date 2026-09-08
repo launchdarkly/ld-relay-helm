@@ -39,6 +39,15 @@ spec:
     {{- with .Values.autoscaling.additionalMetrics }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
+    {{- if not (or .Values.autoscaling.targetCPUUtilizationPercentage .Values.autoscaling.targetMemoryUtilizationPercentage .Values.autoscaling.additionalMetrics) }}
+    # no metrics configured; matches the API server default
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 80
+    {{- end }}
   {{- with .Values.autoscaling.behavior }}
   behavior:
     {{- toYaml . | nindent 4 }}

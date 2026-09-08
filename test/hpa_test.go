@@ -102,6 +102,31 @@ func (s *TemplateTest) TestHPAAdditionalMetricsOnly() {
 	s.Require().Equal(autoscalingv2.ExternalMetricSourceType, hpa.Spec.Metrics[0].Type)
 }
 
+// TestHPADefaultsToCPUWhenNoMetricsConfigured verifies that disabling every
+// metric source renders 80% average CPU explicitly, rather than an empty
+// `spec.metrics` that the API server silently defaults to the same thing.
+func (s *TemplateTest) TestHPADefaultsToCPUWhenNoMetricsConfigured() {
+	options := &helm.Options{
+		SetValues: map[string]string{
+			"autoscaling.enabled":                           "true",
+			"autoscaling.targetCPUUtilizationPercentage":    "0",
+			"autoscaling.targetMemoryUtilizationPercentage": "0",
+		},
+		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
+	}
+
+	output := helm.RenderTemplate(s.T(), options, s.ChartPath, s.Release, []string{"templates/hpa.yaml"})
+	var hpa autoscalingv2.HorizontalPodAutoscaler
+	helm.UnmarshalK8SYaml(s.T(), output, &hpa)
+
+	s.Require().Len(hpa.Spec.Metrics, 1)
+	s.Require().Equal(autoscalingv2.ResourceMetricSourceType, hpa.Spec.Metrics[0].Type)
+	s.Require().Equal(corev1.ResourceCPU, hpa.Spec.Metrics[0].Resource.Name)
+	s.Require().Equal(autoscalingv2.UtilizationMetricType, hpa.Spec.Metrics[0].Resource.Target.Type)
+	s.Require().NotNil(hpa.Spec.Metrics[0].Resource.Target.AverageUtilization)
+	s.Require().Equal(int32(80), *hpa.Spec.Metrics[0].Resource.Target.AverageUtilization)
+}
+
 func (s *TemplateTest) TestHPACanSetCommonLabels() {
 	options := &helm.Options{
 		SetValues: map[string]string{
