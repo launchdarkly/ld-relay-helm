@@ -4,6 +4,18 @@ Change log
 All notable changes to the LaunchDarkly Relay Proxy Helm Chart will be documented in this file. This project adheres to [Semantic Versioning](https://semver.org).
 
 
+## [3.11.0](https://github.com/launchdarkly/ld-relay-helm/compare/3.10.1...3.11.0) (2026-09-08)
+
+
+### Features
+
+* allow additional HPA metrics via autoscaling.additionalMetrics ([#143](https://github.com/launchdarkly/ld-relay-helm/issues/143)) ([ba05727](https://github.com/launchdarkly/ld-relay-helm/commit/ba0572711d584ee38bf1c6bdfb7efa5cfc033d8d))
+
+
+### Bug Fixes
+
+* Render the default CPU metric explicitly when no HPA metrics are set ([#145](https://github.com/launchdarkly/ld-relay-helm/issues/145)) ([62f0a91](https://github.com/launchdarkly/ld-relay-helm/commit/62f0a912dc75c4454d8c4ca24eaf525fae228598))
+
 ## [3.10.1](https://github.com/launchdarkly/ld-relay-helm/compare/3.10.0...3.10.1) (2026-08-27)
 
 
