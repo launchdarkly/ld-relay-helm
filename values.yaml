@@ -255,6 +255,17 @@ autoscaling:
     #   - type: Percent
     #     value: 50
     #     periodSeconds: 60
+  # Extra HPA metrics appended verbatim to spec.metrics, e.g. to scale on an
+  # External or Pods metric (such as a Datadog-backed DatadogMetric) alongside
+  # or instead of CPU/memory.
+  additionalMetrics: []
+    # - type: External
+    #   external:
+    #     metric:
+    #       name: datadogmetric@relay:relay-connections
+    #     target:
+    #       type: AverageValue
+    #       averageValue: "2500"
 
 nodeSelector: {}
 
