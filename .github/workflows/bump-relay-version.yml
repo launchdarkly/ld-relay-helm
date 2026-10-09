@@ -76,7 +76,9 @@ jobs:
           # Key this on the PR, not on the branch. A run that pushed the branch
           # and then failed before `gh pr create` has to be able to finish the
           # job next time, which a branch-existence check would block forever.
-          state=$(gh pr list --head "$BRANCH" --state all --limit 1 --json state --jq '.[0].state // ""')
+          # Ignore PRs from forks, which can use the same head branch name.
+          state=$(gh pr list --head "$BRANCH" --state all --json state,isCrossRepository \
+            --jq '[.[] | select(.isCrossRepository | not)][0].state // ""')
 
           case "$state" in
             OPEN)
