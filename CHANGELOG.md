@@ -4,6 +4,13 @@ Change log
 All notable changes to the LaunchDarkly Relay Proxy Helm Chart will be documented in this file. This project adheres to [Semantic Versioning](https://semver.org).
 
 
+## [3.11.3](https://github.com/launchdarkly/ld-relay-helm/compare/3.11.2...3.11.3) (2026-10-20)
+
+
+### Bug Fixes
+
+* Bump default relay proxy version from 8.23.1 to 8.23.2 ([#154](https://github.com/launchdarkly/ld-relay-helm/issues/154)) ([3f9011c](https://github.com/launchdarkly/ld-relay-helm/commit/3f9011cff8e0948b50d3e46733ba79c3876802f1))
+
 ## [3.11.2](https://github.com/launchdarkly/ld-relay-helm/compare/3.11.1...3.11.2) (2026-09-21)
 
 
