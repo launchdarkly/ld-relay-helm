@@ -33,6 +33,16 @@ For additional configuration, use the [Configuration options](#configuration-opt
 
 OCI artifacts of all LaunchDarkly Helm charts are available in [ghcr.io](https://github.com/orgs/launchdarkly/packages?q=helm-charts).
 
+## Security defaults
+
+The chart ships defaults that satisfy the Kubernetes [Pod Security Standards](https://kubernetes.io/docs/concepts/security/pod-security-standards/) `restricted` profile:
+
+- The container runs as uid/gid 1000 with `runAsNonRoot`, no privilege escalation, all capabilities dropped and a `RuntimeDefault` seccomp profile. The published `launchdarkly/ld-relay` image already runs as uid 1000, so these settings describe the image rather than change how it runs.
+- `readOnlyRootFilesystem` is enabled. The chart always mounts an `emptyDir` at `/tmp` to provide writable scratch space, which is what [offline mode](docs/examples/offline-mode.md) uses when it expands its archive.
+- The service account token is not mounted, because the Relay Proxy never calls the Kubernetes API. The service account is still created so it can carry cloud IAM annotations such as EKS IRSA or GKE Workload Identity. Set `automountServiceAccountToken: true` if something in your setup needs it.
+
+Every one of these is a value you can override.
+
 ## Configuration options
 
 To customize this Helm chart, override the configuration options defined in the [values file](https://github.com/launchdarkly/ld-relay-helm/blob/main/values.yaml). The values file contains detailed documentation on each option.
@@ -62,11 +72,12 @@ Here's a summary of the available configuration options:
 | serviceAccount.create                         | bool    | `true`                                                       | Specifies whether a service account should be created                                                    |
 | serviceAccount.annotations                    | object  | `{}`                                                         | Annotations to add to the service account                                                                |
 | serviceAccount.name                           | string  | `""`                                                         | The name of the service account                                                                          |
+| automountServiceAccountToken                  | bool    | `false`                                                      | Mounts the service account token into the pod. The Relay Proxy does not call the Kubernetes API           |
 | pod.annotations                               | object  | `{}`                                                         | Pod annotations                                                                                          |
 | pod.labels                                    | object  | `{}`                                                         | Pod labels                                                                                               |
-| pod.securityContext                           | object  | `{}`                                                         | Pod security context                                                                                     |
+| pod.securityContext                           | object  | `{runAsNonRoot: true, runAsUser: 1000, runAsGroup: 1000, fsGroup: 1000, seccompProfile: {type: RuntimeDefault}}` | Pod security context                                                                                     |
 | terminationGracePeriodSeconds                 | string  | `null`                                                       | Pod terminationGracePeriodSeconds                                                                        |
-| securityContext                               | object  | `{}`                                                         | Container security context                                                                               |
+| securityContext                               | object  | `{allowPrivilegeEscalation: false, capabilities: {drop: [ALL]}, readOnlyRootFilesystem: true, runAsNonRoot: true, runAsUser: 1000, runAsGroup: 1000, seccompProfile: {type: RuntimeDefault}}` | Container security context                                                                               |
 | service.type                                  | string  | `ClusterIP`                                                  | Kubernetes service type                                                                                  |
 | service.annotations                           | object  | `{}`                                                         | Annotations to add to the service                                                                        |
 | service.ports                                 | array   | `[{port: 8030, targetPort: 8030, protocol: TCP, name: api}]` | Service port mapping. Must include one port named `api`.                                                 |

@@ -29,9 +29,24 @@ spec:
           name: ld-relay-test-config
       
       
+      # Writable scratch space so the container can run with a read-only root
+      # filesystem. Offline mode expands its archive under TMPDIR.
+      - name: ld-relay-tmp
+        emptyDir: {}
       serviceAccountName: ld-relay-test
+      automountServiceAccountToken: false
+      securityContext:
+        fsGroup: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+        runAsUser: 1000
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: ld-relay
+          volumeMounts:
+            - name: ld-relay-tmp
+              mountPath: /tmp
 
           env:
 
@@ -39,7 +54,16 @@ spec:
             - configMapRef:
                 name: ld-relay-test-config
           securityContext:
-            {}
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000
+            seccompProfile:
+              type: RuntimeDefault
           image: "launchdarkly/ld-relay:8.23.2"
           imagePullPolicy: IfNotPresent
           ports:

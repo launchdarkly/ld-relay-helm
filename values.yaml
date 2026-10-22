@@ -50,14 +50,28 @@ serviceAccount:
   # If not set and create is true, a name is generated using the fullname template
   name: ""
 
+# Mounts the service account token into the pod. ld-relay never calls the Kubernetes
+# API, so this is off by default; the service account still exists to carry cloud IAM
+# annotations (IRSA, GKE Workload Identity). Note the pod-level field takes precedence
+# over the one on the ServiceAccount, so this single value sets both.
+automountServiceAccountToken: false
+
 pod:
   # Annotations to add to the pod.
   annotations: {}
   # Labels to add to the pod.
   labels: {}
   # Security context applied to the pod.
-  securityContext: {}
-    # fsGroup: 2000
+  # The published ld-relay image already runs as uid/gid 1000, so these match the
+  # image rather than changing how it runs. They are set explicitly because the
+  # Pod Security Standards "restricted" profile requires them on the manifest.
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+    seccompProfile:
+      type: RuntimeDefault
   # PriorityClassName to apply to the pod.
   priorityClassName: ""
   # DEPRECATED: Use pod.disruptionBudget instead. This will be removed in the next major version.
@@ -103,13 +117,20 @@ pod:
 # Optional termination grace period in seconds for graceful pod shutdown
 # terminationGracePeriodSeconds: 90
 
-securityContext: {}
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
+# Security context applied to the relay container.
+# ld-relay listens on 8030 (an unprivileged port) and writes nothing to disk outside
+# of offline mode, which uses TMPDIR -- the chart mounts an emptyDir at /tmp for that.
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  seccompProfile:
+    type: RuntimeDefault
 
 service:
   type: ClusterIP
