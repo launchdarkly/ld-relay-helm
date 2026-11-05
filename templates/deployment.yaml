@@ -77,7 +77,12 @@ spec:
       {{- with .Values.relay.extraVolumes }}
         {{- toYaml . | nindent 6 }}
       {{- end }}
+      # Writable scratch space so the container can run with a read-only root
+      # filesystem. Offline mode expands its archive under TMPDIR.
+      - name: {{ include "ld-relay.name" . }}-tmp
+        emptyDir: {}
       serviceAccountName: {{ include "ld-relay.serviceAccountName" . }}
+      automountServiceAccountToken: {{ .Values.automountServiceAccountToken }}
       {{- with .Values.pod.securityContext }}
       securityContext:
           {{- toYaml . | nindent 8 }}
@@ -91,7 +96,6 @@ spec:
       {{- end }}
       containers:
         - name: {{ .Chart.Name }}
-          {{- if or $has_volumes .Values.relay.extraVolumeMounts }}
           volumeMounts:
             {{- if .Values.relay.volume.definition }}
             - name: {{ include "ld-relay.name" . }}-volume
@@ -105,7 +109,8 @@ spec:
             {{- with .Values.relay.extraVolumeMounts }}
               {{- toYaml . | nindent 12 }}
             {{- end }}
-          {{- end }}
+            - name: {{ include "ld-relay.name" . }}-tmp
+              mountPath: /tmp
 
           {{- if .Values.relay.command }}
           command:

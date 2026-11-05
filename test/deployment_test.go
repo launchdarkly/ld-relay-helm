@@ -169,11 +169,11 @@ func (s *TemplateTest) TestCanMountSecretsAsVolumes() {
 
 	s.Require().Equal(0, len(deployment.Spec.Template.Spec.Containers[0].Env))
 
-	s.Require().Len(deployment.Spec.Template.Spec.Containers[0].VolumeMounts, 1)
+	s.Require().Len(deployment.Spec.Template.Spec.Containers[0].VolumeMounts, 2) // + ld-relay-tmp
 	s.Require().Equal("ld-relay-projected-volume", deployment.Spec.Template.Spec.Containers[0].VolumeMounts[0].Name)
 	s.Require().Equal("/mnt/secrets/", deployment.Spec.Template.Spec.Containers[0].VolumeMounts[0].MountPath)
 
-	s.Require().Len(deployment.Spec.Template.Spec.Volumes, 2)
+	s.Require().Len(deployment.Spec.Template.Spec.Volumes, 3) // + ld-relay-tmp
 
 	volume := deployment.Spec.Template.Spec.Volumes[1]
 	s.Require().Equal("ld-relay-projected-volume", volume.Name)
@@ -641,7 +641,7 @@ func (s *TemplateTest) TestCanAddExtraVolumes() {
 	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
 
 	// Default volume + 2 extra volumes
-	s.Require().Len(deployment.Spec.Template.Spec.Volumes, 3)
+	s.Require().Len(deployment.Spec.Template.Spec.Volumes, 4) // + ld-relay-tmp
 
 	// Check the extra volumes
 	s.Require().Equal("custom-config", deployment.Spec.Template.Spec.Volumes[1].Name)
@@ -668,7 +668,7 @@ func (s *TemplateTest) TestCanAddExtraVolumeMounts() {
 	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
 
 	// Should have volumeMounts even without default volumes
-	s.Require().Len(deployment.Spec.Template.Spec.Containers[0].VolumeMounts, 2)
+	s.Require().Len(deployment.Spec.Template.Spec.Containers[0].VolumeMounts, 3) // + ld-relay-tmp
 
 	s.Require().Equal("custom-mount", deployment.Spec.Template.Spec.Containers[0].VolumeMounts[0].Name)
 	s.Require().Equal("/mnt/custom", deployment.Spec.Template.Spec.Containers[0].VolumeMounts[0].MountPath)
@@ -695,7 +695,7 @@ func (s *TemplateTest) TestExtraVolumeMountsWorkWithDefaultVolumes() {
 	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
 
 	// Should have default volume mount + extra volume mount
-	s.Require().Len(deployment.Spec.Template.Spec.Containers[0].VolumeMounts, 2)
+	s.Require().Len(deployment.Spec.Template.Spec.Containers[0].VolumeMounts, 3) // + ld-relay-tmp
 
 	s.Require().Equal("ld-relay-volume", deployment.Spec.Template.Spec.Containers[0].VolumeMounts[0].Name)
 	s.Require().Equal("/mnt/volume", deployment.Spec.Template.Spec.Containers[0].VolumeMounts[0].MountPath)
