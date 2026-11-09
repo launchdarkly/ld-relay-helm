@@ -21,6 +21,11 @@ image:
   repository: launchdarkly/ld-relay
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
+  #
+  # The default image is distroless and has no shell. For a busybox shell to
+  # debug with, use the debug
+  # variant, for example "9.0.1-static-debian13-debug-nonroot", and run
+  # `kubectl exec -it <pod> -- /busybox/sh`.
   tag: ""
 
 imagePullSecrets: []
@@ -74,17 +79,6 @@ pod:
       type: RuntimeDefault
   # PriorityClassName to apply to the pod.
   priorityClassName: ""
-  # DEPRECATED: Use pod.disruptionBudget instead. This will be removed in the next major version.
-  distruptionBudget:
-    # Specifies whether a pdb should be created
-    enabled: false
-    # Number of pods that are available after eviction as number or percentage (eg.: 50% or 2)
-    ## Defaults to 0 if not specified
-    minAvailable: ""
-    # Number of pods that are unavailable after eviction as number or percentage (eg.: 50% or 2).
-    # Only one of (minavailable or maxUnavailable) can be specificed.
-    # Has higher precedence over `podDisruptionBudget.minAvailable`
-    maxUnavailable: ""
   disruptionBudget:
     # Specifies whether a pdb should be created
     enabled: false
@@ -145,11 +139,6 @@ service:
       targetPort: 8030
       protocol: TCP
       name: api
-    # Prometheus support requires exposing additional ports
-    # - port: 8031
-    #   targetPort: 8031
-    #   protocol: TCP
-    #   name: prometheus
 
 ingress:
   enabled: false
@@ -164,12 +153,6 @@ ingress:
   #       - path: /
   #         pathType: ImplementationSpecific
   #         port: 8030
-  # You may optionally need to expose the Prometheus endpoint as well
-  #   - host: prometheus.ld-relay.local
-  #     paths:
-  #       - path: /
-  #         pathType: ImplementationSpecific
-  #         port: 8031
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
@@ -210,12 +193,6 @@ httpRoute:
   #           type: PathPrefix
   #           value: /
   #     port: 8030
-  # You may optionally need to expose the Prometheus endpoint as well
-  #   - matches:
-  #       - path:
-  #           type: PathPrefix
-  #           value: /prometheus
-  #     port: 8031
   # The full rule schema is supported -- header/method/query matches, filters,
   # and timeouts:
   #   - matches:
@@ -353,6 +330,18 @@ relay:
 
   # Default liveness and readiness probes for the relay. This assumes the relay will be running in the standard non-TLS mode.
   #
+  # The relay image has no shell, so probes must use httpGet (or tcpSocket), not exec.
+  #
+  # The liveness probe requests the plain /status endpoint. It answers 200 for as long as the relay serves
+  # HTTP, so a LaunchDarkly outage does not restart the pod.
+  #
+  # The readiness probe uses `expect` assertions on /status. The relay answers 412 until it has at least one
+  # environment and every environment has finished initializing its connection and data store. After that,
+  # the pod stays ready while it serves the flag data it already has, even when LaunchDarkly is unreachable.
+  # Do not use `expect=status=healthy` here: during a LaunchDarkly outage it removes every pod from the
+  # Service at once. To learn more, read
+  # https://github.com/launchdarkly/ld-relay/blob/v9/docs/endpoints.md#health-assertions-the-expect-query-parameter
+  #
   # If TLS is enabled, you will need to update this scheme to use HTTPS. You can do this by setting:
   #
   # relay:
@@ -374,17 +363,16 @@ relay:
       port: api
   readinessProbe:
     httpGet:
-      path: /status
+      path: "/status?expect=environments[count]!=0&expect=environments[*].connectionStatus.state!=INITIALIZING&expect=environments[*].dataStoreStatus.state!=INITIALIZING"
       port: api
   startupProbe: null
 
+  # The relay image has no shell, so a hook cannot run `sh -c ...`. To delay
+  # shutdown, use the sleep action (Kubernetes 1.30 or later).
   lifecycle: {}
     # preStop:
-    #   exec:
-    #     command:
-    #       - sh
-    #       - -c
-    #       - sleep 60
+    #   sleep:
+    #     seconds: 60
 
   # Enables mounting a k8s volume onto the relay container.
   #

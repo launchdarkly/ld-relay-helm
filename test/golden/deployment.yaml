@@ -8,7 +8,7 @@ metadata:
   labels:
     app.kubernetes.io/name: ld-relay
     app.kubernetes.io/instance: ld-relay-test
-    app.kubernetes.io/version: "8.23.4"
+    app.kubernetes.io/version: "9.0.1"
     app.kubernetes.io/managed-by: Helm
 spec:
   replicas: 1
@@ -49,7 +49,7 @@ spec:
             runAsNonRoot: true
             seccompProfile:
               type: RuntimeDefault
-          image: "launchdarkly/ld-relay:8.23.4"
+          image: "launchdarkly/ld-relay:9.0.1"
           imagePullPolicy: IfNotPresent
           ports:
               - containerPort: 8030
@@ -61,7 +61,7 @@ spec:
               port: api
           readinessProbe:
             httpGet:
-              path: /status
+              path: /status?expect=environments[count]!=0&expect=environments[*].connectionStatus.state!=INITIALIZING&expect=environments[*].dataStoreStatus.state!=INITIALIZING
               port: api
           resources:
             {}

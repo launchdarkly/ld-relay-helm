@@ -308,7 +308,9 @@ func (s *TemplateTest) TestProbesDefaultToSaneValues() {
 	s.Require().Equal("api", deployment.Spec.Template.Spec.Containers[0].LivenessProbe.ProbeHandler.HTTPGet.Port.String())
 	s.Require().Equal(none, deployment.Spec.Template.Spec.Containers[0].LivenessProbe.ProbeHandler.HTTPGet.Scheme)
 
-	s.Require().Equal("/status", deployment.Spec.Template.Spec.Containers[0].ReadinessProbe.ProbeHandler.HTTPGet.Path)
+	s.Require().Equal(
+		"/status?expect=environments[count]!=0&expect=environments[*].connectionStatus.state!=INITIALIZING&expect=environments[*].dataStoreStatus.state!=INITIALIZING",
+		deployment.Spec.Template.Spec.Containers[0].ReadinessProbe.ProbeHandler.HTTPGet.Path)
 	s.Require().Equal("api", deployment.Spec.Template.Spec.Containers[0].ReadinessProbe.ProbeHandler.HTTPGet.Port.String())
 	s.Require().Equal(none, deployment.Spec.Template.Spec.Containers[0].ReadinessProbe.ProbeHandler.HTTPGet.Scheme)
 }
@@ -513,7 +515,7 @@ func (s *TemplateTest) TestLifecycleHooksDefaultToEmpty() {
 func (s *TemplateTest) TestCanSetLifecycleHooks() {
 	options := &helm.Options{
 		SetValues: map[string]string{
-			"relay.lifecycle.preStop.exec.command": "{sh,-c,sleep 60}",
+			"relay.lifecycle.preStop.sleep.seconds": "60",
 		},
 		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
 	}
@@ -522,9 +524,7 @@ func (s *TemplateTest) TestCanSetLifecycleHooks() {
 	var deployment appsv1.Deployment
 	helm.UnmarshalK8SYaml(s.T(), output, &deployment)
 
-	s.Require().Equal("sh", deployment.Spec.Template.Spec.Containers[0].Lifecycle.PreStop.Exec.Command[0])
-	s.Require().Equal("-c", deployment.Spec.Template.Spec.Containers[0].Lifecycle.PreStop.Exec.Command[1])
-	s.Require().Equal("sleep 60", deployment.Spec.Template.Spec.Containers[0].Lifecycle.PreStop.Exec.Command[2])
+	s.Require().Equal(int64(60), deployment.Spec.Template.Spec.Containers[0].Lifecycle.PreStop.Sleep.Seconds)
 }
 
 func (s *TemplateTest) TestCanSetTerminationGracePeriodSeconds() {
@@ -847,9 +847,9 @@ func (s *TemplateTest) TestCanSetDnsPolicyAndDnsConfig() {
 func (s *TemplateTest) TestCanSetRollingUpdateStrategy() {
 	options := &helm.Options{
 		SetValues: map[string]string{
-			"deployment.strategy.type":                          "RollingUpdate",
-			"deployment.strategy.rollingUpdate.maxSurge":        "6",
-			"deployment.strategy.rollingUpdate.maxUnavailable":  "0",
+			"deployment.strategy.type":                         "RollingUpdate",
+			"deployment.strategy.rollingUpdate.maxSurge":       "6",
+			"deployment.strategy.rollingUpdate.maxUnavailable": "0",
 		},
 		KubectlOptions: k8s.NewKubectlOptions("", "", s.Namespace),
 	}
