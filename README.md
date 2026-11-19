@@ -35,13 +35,18 @@ OCI artifacts of all LaunchDarkly Helm charts are available in [ghcr.io](https:/
 
 ## Security defaults
 
-The chart ships defaults that satisfy the Kubernetes [Pod Security Standards](https://kubernetes.io/docs/concepts/security/pod-security-standards/) `restricted` profile:
+The chart's default `pod.securityContext` and `securityContext` satisfy the Kubernetes [Pod Security Standards](https://kubernetes.io/docs/concepts/security/pod-security-standards/) `restricted` profile. The pod uses the `RuntimeDefault` seccomp profile. The Relay Proxy container sets `runAsNonRoot`, sets `allowPrivilegeEscalation: false` and drops all capabilities.
 
-- The container runs as uid/gid 1000 with `runAsNonRoot`, no privilege escalation, all capabilities dropped and a `RuntimeDefault` seccomp profile. The published `launchdarkly/ld-relay` image already runs as uid 1000, so these settings describe the image rather than change how it runs.
-- `readOnlyRootFilesystem` is enabled. The chart always mounts an `emptyDir` at `/tmp` to provide writable scratch space, which is what [offline mode](docs/examples/offline-mode.md) uses when it expands its archive.
-- The service account token is not mounted, because the Relay Proxy never calls the Kubernetes API. The service account is still created so it can carry cloud IAM annotations such as EKS IRSA or GKE Workload Identity. Set `automountServiceAccountToken: true` if something in your setup needs it.
+The chart does not set `runAsUser`, `runAsGroup` or `fsGroup`, so the image decides which user the Relay Proxy runs as. This also lets platforms that assign UIDs, such as OpenShift, admit the pod.
 
-Every one of these is a value you can override.
+Helm merges your values with these defaults. To remove a default, set it to `null`, for example `securityContext.runAsNonRoot: null`.
+
+These container-level defaults do not apply to `relay.initContainers`, so init containers can still run as root. In a namespace that enforces `restricted`, give each init container its own `securityContext` with the same fields.
+
+To harden the pod further:
+
+- Set `securityContext.readOnlyRootFilesystem: true`. The chart then mounts an `emptyDir` at `/tmp`, which [offline mode](docs/examples/offline-mode.md) uses when it expands its archive. If `relay.extraVolumeMounts` already mounts `/tmp`, the chart uses your mount instead.
+- Set `automountServiceAccountToken: false`. The Relay Proxy does not call the Kubernetes API. Keep the token if another part of your setup reads it, for example Vault Agent with Kubernetes auth.
 
 ## Configuration options
 
@@ -72,12 +77,12 @@ Here's a summary of the available configuration options:
 | serviceAccount.create                         | bool    | `true`                                                       | Specifies whether a service account should be created                                                    |
 | serviceAccount.annotations                    | object  | `{}`                                                         | Annotations to add to the service account                                                                |
 | serviceAccount.name                           | string  | `""`                                                         | The name of the service account                                                                          |
-| automountServiceAccountToken                  | bool    | `false`                                                      | Mounts the service account token into the pod. The Relay Proxy does not call the Kubernetes API           |
+| automountServiceAccountToken                  | bool    | `null`                                                       | Pod automountServiceAccountToken. When unset, Kubernetes applies its default                             |
 | pod.annotations                               | object  | `{}`                                                         | Pod annotations                                                                                          |
 | pod.labels                                    | object  | `{}`                                                         | Pod labels                                                                                               |
-| pod.securityContext                           | object  | `{runAsNonRoot: true, runAsUser: 1000, runAsGroup: 1000, fsGroup: 1000, seccompProfile: {type: RuntimeDefault}}` | Pod security context                                                                                     |
+| pod.securityContext                           | object  | `{seccompProfile: {type: RuntimeDefault}}`                   | Pod security context                                                                                     |
 | terminationGracePeriodSeconds                 | string  | `null`                                                       | Pod terminationGracePeriodSeconds                                                                        |
-| securityContext                               | object  | `{allowPrivilegeEscalation: false, capabilities: {drop: [ALL]}, readOnlyRootFilesystem: true, runAsNonRoot: true, runAsUser: 1000, runAsGroup: 1000, seccompProfile: {type: RuntimeDefault}}` | Container security context                                                                               |
+| securityContext                               | object  | `{allowPrivilegeEscalation: false, capabilities: {drop: [ALL]}, runAsNonRoot: true, seccompProfile: {type: RuntimeDefault}}` | Container security context. Setting `readOnlyRootFilesystem: true` adds an `emptyDir` at `/tmp` |
 | service.type                                  | string  | `ClusterIP`                                                  | Kubernetes service type                                                                                  |
 | service.annotations                           | object  | `{}`                                                         | Annotations to add to the service                                                                        |
 | service.ports                                 | array   | `[{port: 8030, targetPort: 8030, protocol: TCP, name: api}]` | Service port mapping. Must include one port named `api`.                                                 |

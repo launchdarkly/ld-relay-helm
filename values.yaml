@@ -50,11 +50,11 @@ serviceAccount:
   # If not set and create is true, a name is generated using the fullname template
   name: ""
 
-# Mounts the service account token into the pod. ld-relay never calls the Kubernetes
-# API, so this is off by default; the service account still exists to carry cloud IAM
-# annotations (IRSA, GKE Workload Identity). Note the pod-level field takes precedence
-# over the one on the ServiceAccount, so this single value sets both.
-automountServiceAccountToken: false
+# Optional automountServiceAccountToken setting for the relay pod.
+# When unset, Kubernetes applies its default (the token is mounted). The Relay Proxy
+# does not call the Kubernetes API, so you can set this to false unless another part
+# of your setup reads the token.
+automountServiceAccountToken: null
 
 pod:
   # Annotations to add to the pod.
@@ -62,14 +62,11 @@ pod:
   # Labels to add to the pod.
   labels: {}
   # Security context applied to the pod.
-  # The published ld-relay image already runs as uid/gid 1000, so these match the
-  # image rather than changing how it runs. They are set explicitly because the
-  # Pod Security Standards "restricted" profile requires them on the manifest.
+  # The default seccomp profile applies to every container in the pod, and the
+  # Pod Security Standards "restricted" profile requires it. runAsNonRoot is set on
+  # the relay container only, so init containers can still run as root.
+  # The image sets the user, so the chart does not. To remove a default, set it to null.
   securityContext:
-    runAsNonRoot: true
-    runAsUser: 1000
-    runAsGroup: 1000
-    fsGroup: 1000
     seccompProfile:
       type: RuntimeDefault
   # PriorityClassName to apply to the pod.
@@ -118,19 +115,21 @@ pod:
 # terminationGracePeriodSeconds: 90
 
 # Security context applied to the relay container.
-# ld-relay listens on 8030 (an unprivileged port) and writes nothing to disk outside
-# of offline mode, which uses TMPDIR -- the chart mounts an emptyDir at /tmp for that.
+# These defaults are the container-level fields that the Pod Security Standards
+# "restricted" profile requires. To remove a default, set it to null.
+#
+# If you set readOnlyRootFilesystem to true, the chart mounts an emptyDir at /tmp,
+# because offline mode expands its archive there. The chart does not add this mount
+# if relay.extraVolumeMounts already mounts /tmp.
 securityContext:
   allowPrivilegeEscalation: false
   capabilities:
     drop:
       - ALL
-  readOnlyRootFilesystem: true
   runAsNonRoot: true
-  runAsUser: 1000
-  runAsGroup: 1000
   seccompProfile:
     type: RuntimeDefault
+  # readOnlyRootFilesystem: true
 
 service:
   type: ClusterIP
