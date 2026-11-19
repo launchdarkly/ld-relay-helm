@@ -122,9 +122,9 @@ pod:
 # "restricted" profile requires. To remove a default, set it to null. To remove all
 # of them, set securityContext to null.
 #
-# If you set readOnlyRootFilesystem to true, the chart mounts an emptyDir at /tmp,
-# because offline mode expands its archive there. The chart does not add this mount
-# if relay.extraVolumeMounts already mounts /tmp.
+# If you set readOnlyRootFilesystem to true and use offline mode, mount a writable
+# volume at /tmp with relay.extraVolumes and relay.extraVolumeMounts. Offline mode
+# expands its archive there, and the Relay Proxy does not start without it.
 securityContext:
   allowPrivilegeEscalation: false
   capabilities:

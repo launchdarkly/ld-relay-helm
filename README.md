@@ -60,7 +60,20 @@ Chart versions before 4.0 set no security context. When you upgrade, check these
 
 To harden the pod further:
 
-- Set `securityContext.readOnlyRootFilesystem: true`. The chart then mounts an `emptyDir` at `/tmp`, which [offline mode](docs/examples/offline-mode.md) uses when it expands its archive. If `relay.extraVolumeMounts` already mounts `/tmp`, the chart uses your mount instead.
+- Set `securityContext.readOnlyRootFilesystem: true`. If you also use [offline mode](docs/examples/offline-mode.md), mount a writable volume at `/tmp`, because offline mode expands its archive there. Without it, the Relay Proxy does not start.
+
+    ```yaml
+    securityContext:
+      readOnlyRootFilesystem: true
+    relay:
+      extraVolumes:
+        - name: tmp
+          emptyDir: {}
+      extraVolumeMounts:
+        - name: tmp
+          mountPath: /tmp
+    ```
+
 - Set `automountServiceAccountToken: false`. The Relay Proxy does not call the Kubernetes API. Keep the token if another part of your setup reads it, for example Vault Agent with Kubernetes auth.
 
 ## Configuration options
@@ -97,7 +110,7 @@ Here's a summary of the available configuration options:
 | pod.labels                                    | object  | `{}`                                                         | Pod labels                                                                                               |
 | pod.securityContext                           | object  | `{seccompProfile: {type: RuntimeDefault}}`                   | Pod security context                                                                                     |
 | terminationGracePeriodSeconds                 | string  | `null`                                                       | Pod terminationGracePeriodSeconds                                                                        |
-| securityContext                               | object  | `{allowPrivilegeEscalation: false, capabilities: {drop: [ALL]}, runAsNonRoot: true, seccompProfile: {type: RuntimeDefault}}` | Container security context. Setting `readOnlyRootFilesystem: true` adds an `emptyDir` at `/tmp` |
+| securityContext                               | object  | `{allowPrivilegeEscalation: false, capabilities: {drop: [ALL]}, runAsNonRoot: true, seccompProfile: {type: RuntimeDefault}}` | Container security context                                                                               |
 | service.type                                  | string  | `ClusterIP`                                                  | Kubernetes service type                                                                                  |
 | service.annotations                           | object  | `{}`                                                         | Annotations to add to the service                                                                        |
 | service.ports                                 | array   | `[{port: 8030, targetPort: 8030, protocol: TCP, name: api}]` | Service port mapping. Must include one port named `api`.                                                 |

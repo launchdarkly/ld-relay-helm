@@ -115,6 +115,23 @@ To get started, create a Relay Proxy configuration from the [Relay proxy tab][pr
 
 Success! Now you should have a working installation of the Relay Proxy, initially configured directly from your pre-downloaded offline file.
 
+## With a read-only root filesystem
+
+Offline mode expands the archive into a temporary directory under `/tmp`. If you set `securityContext.readOnlyRootFilesystem: true`, mount a writable volume at `/tmp`, or the Relay Proxy does not start:
+
+```yaml
+# values.yaml
+securityContext:
+    readOnlyRootFilesystem: true
+relay:
+    extraVolumes:
+        - name: tmp
+          emptyDir: {}
+    extraVolumeMounts:
+        - name: tmp
+          mountPath: /tmp
+```
+
 [minikube]: https://minikube.sigs.k8s.io/docs/start/
 [offline]: https://docs.launchdarkly.com/home/relay-proxy/offline
 [proxy-tab]: https://app.launchdarkly.com/settings/relay
