@@ -72,3 +72,4 @@ jobs:
           gh release edit "$TAG_NAME"
           --repo ${{ github.repository }}
           --draft=false
+          --latest=false
