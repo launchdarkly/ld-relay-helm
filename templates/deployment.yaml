@@ -82,7 +82,7 @@ spec:
       {{- if (.Values.securityContext | default dict).readOnlyRootFilesystem }}
         {{- $has_tmp_volume = true }}
         {{- range .Values.relay.extraVolumeMounts }}
-          {{- if eq (.mountPath | default "" | trimSuffix "/") "/tmp" }}
+          {{- if eq (.mountPath | default "" | clean) "/tmp" }}
             {{- $has_tmp_volume = false }}
           {{- end }}
         {{- end }}
@@ -168,8 +168,10 @@ spec:
           lifecycle:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+          {{- with .Values.securityContext }}
           securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:

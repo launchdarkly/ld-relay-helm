@@ -64,8 +64,11 @@ pod:
   # Security context applied to the pod.
   # The default seccomp profile applies to every container in the pod, and the
   # Pod Security Standards "restricted" profile requires it. runAsNonRoot is set on
-  # the relay container only, so init containers can still run as root.
-  # The image sets the user, so the chart does not. To remove a default, set it to null.
+  # the relay container only, so the chart does not force init containers to run as
+  # non-root. The image sets the user, so the chart does not.
+  #
+  # Helm merges your values with these defaults, so {} does not remove them. To remove
+  # a default, set it to null. To remove all of them, set pod.securityContext to null.
   securityContext:
     seccompProfile:
       type: RuntimeDefault
@@ -116,7 +119,8 @@ pod:
 
 # Security context applied to the relay container.
 # These defaults are the container-level fields that the Pod Security Standards
-# "restricted" profile requires. To remove a default, set it to null.
+# "restricted" profile requires. To remove a default, set it to null. To remove all
+# of them, set securityContext to null.
 #
 # If you set readOnlyRootFilesystem to true, the chart mounts an emptyDir at /tmp,
 # because offline mode expands its archive there. The chart does not add this mount
