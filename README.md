@@ -49,14 +49,7 @@ Helm merges your values with these defaults:
 
 These container-level defaults do not apply to `relay.initContainers`. In a namespace that enforces `restricted`, give each init container its own `securityContext` with the same fields.
 
-### Upgrading to 4.0
-
-Chart versions before 4.0 set no security context. When you upgrade, check these cases:
-
-- **Custom images.** The image must run as a numeric, non-root UID. An image that runs as root, or that sets `USER` to a name, fails the `runAsNonRoot` check and the container does not start. The published `launchdarkly/ld-relay` images run as a numeric non-root UID.
-- **Settings that conflict with the defaults.** Your values merge with the defaults, so some settings now conflict. `securityContext.runAsUser: 0` conflicts with `runAsNonRoot: true`. `securityContext.privileged: true` and capabilities in `securityContext.capabilities.add` such as `SYS_ADMIN` conflict with `allowPrivilegeEscalation: false`. Remove the conflicting default with `null`.
-- **Pod-level seccomp profiles.** The container now sets `seccompProfile: RuntimeDefault`, which takes precedence over `pod.securityContext.seccompProfile`. If you set a different profile on the pod, set it on `securityContext.seccompProfile` as well.
-- **`helm upgrade --reuse-values`.** This keeps the values of your previous release, including its empty security contexts, so the new defaults do not apply. Use `--reset-then-reuse-values` (Helm 3.14 or later) or pass your values explicitly.
+To upgrade from a chart version before 4.0, see [Upgrading to 4.0](#upgrading-to-40).
 
 To harden the pod further:
 
@@ -90,7 +83,7 @@ Here's a summary of the available configuration options:
 | relay.secrets                                 | array   | `[]`                                                         | Defines container environment variables or volumes populated from k8s secrets                            |
 | relay.volume                                  | object  | `{}`                                                         | Enables offline mode or references an existing config file from a defined volume                         |
 | relay.livenessProbe                           | object  | `{httpGet: { port: "api",  path: "/status" }}`               | Defines the liveness probe for the relay container                                                       |
-| relay.readinessProbe                          | object  | `{httpGet: { port: "api",  path: "/status" }}`               | Defines the readiness probe for the relay container                                                      |
+| relay.readinessProbe                          | object  | `{httpGet: { port: "api",  path: "/status?expect=..." }}`    | Defines the readiness probe for the relay container. The default `expect` clauses pass once every environment has initialized |
 | relay.startupProbe                            | object  | `null`                                                       | Defines the startup probe for the relay  container                                                     |
 | relay.lifecycle                               | object  | `{}`                                                         | Defines the lifecycle hooks for the relay container                                                      |
 | replicaCount                                  | integer | `1`                                                          | Number of replicas of the relay pod                                                                      |
@@ -153,6 +146,27 @@ Here's a summary of the available configuration options:
 `httpRoute` requires the [Gateway API](https://gateway-api.sigs.k8s.io/) CRDs (`gateway.networking.k8s.io`) to already be installed in the cluster, along with a `Gateway` resource for the route to attach to. Use either `ingress` or `httpRoute`, not both.
 
 For each rule, set `port` to route to this chart's Service, or set `backendRefs` explicitly. `backendRefs` takes precedence over `port` when both are given, and (unlike `port`) can target any Service, including another namespace. A rule with no `matches` matches every request and publishes the entire relay -- including admin/metrics endpoints -- on the route's hostname, so add explicit `matches` unless a catch-all is intended.
+
+## Upgrading to 4.0
+
+### Relay Proxy v9
+
+Chart 4.0 installs Relay Proxy v9 by default. Read the [Relay Proxy v9 changelog](https://github.com/launchdarkly/ld-relay/blob/v9/CHANGELOG.md) for the changes to Relay itself, such as the move from OpenCensus to OpenTelemetry. The chart changes are:
+
+- The relay image is distroless. It has no shell, so `exec` probes and lifecycle hooks that run `sh` no longer work. Use `httpGet` probes, and use the `sleep` action for a `preStop` delay (Kubernetes 1.30 or later). The `-static-debian13-debug-nonroot` image tags include a busybox shell at `/busybox/sh` for debugging.
+- The image's user changed from uid 1000 to the distroless nonroot user (uid 65532). If you set `runAsUser`, `runAsGroup` or `fsGroup` to 1000, remove those overrides, or make sure the files in your volumes are readable by the user you choose.
+- The default readiness probe uses `/status` `expect` assertions. A pod becomes ready when it has at least one environment and every environment has finished initializing. It stays ready during a LaunchDarkly outage. The liveness probe still requests the plain `/status` endpoint.
+- The Prometheus exporter was removed from Relay v9, so the values file no longer shows a Prometheus port. Export metrics over OTLP instead.
+- The deprecated `pod.distruptionBudget` value is removed. Use `pod.disruptionBudget`.
+
+### Security context
+
+Chart versions before 4.0 set no security context. When you upgrade, check these cases:
+
+- **Custom images.** The image must run as a numeric, non-root UID. An image that runs as root, or that sets `USER` to a name, fails the `runAsNonRoot` check and the container does not start. The published `launchdarkly/ld-relay` images run as a numeric non-root UID.
+- **Settings that conflict with the defaults.** Your values merge with the defaults, so some settings now conflict. `securityContext.runAsUser: 0` conflicts with `runAsNonRoot: true`. `securityContext.privileged: true` and capabilities in `securityContext.capabilities.add` such as `SYS_ADMIN` conflict with `allowPrivilegeEscalation: false`. Remove the conflicting default with `null`.
+- **Pod-level seccomp profiles.** The container now sets `seccompProfile: RuntimeDefault`, which takes precedence over `pod.securityContext.seccompProfile`. If you set a different profile on the pod, set it on `securityContext.seccompProfile` as well.
+- **`helm upgrade --reuse-values`.** This keeps the values of your previous release, including its empty security contexts, so the new defaults do not apply. Use `--reset-then-reuse-values` (Helm 3.14 or later) or pass your values explicitly.
 
 ## Learn more
 
