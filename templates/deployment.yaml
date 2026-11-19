@@ -78,6 +78,9 @@ spec:
         {{- toYaml . | nindent 6 }}
       {{- end }}
       serviceAccountName: {{ include "ld-relay.serviceAccountName" . }}
+      {{- if not (kindIs "invalid" .Values.automountServiceAccountToken) }}
+      automountServiceAccountToken: {{ .Values.automountServiceAccountToken }}
+      {{- end }}
       {{- with .Values.pod.securityContext }}
       securityContext:
           {{- toYaml . | nindent 8 }}
@@ -147,8 +150,10 @@ spec:
           lifecycle:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+          {{- with .Values.securityContext }}
           securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:

@@ -1,0 +1,4 @@
+# An empty map merges with the defaults, so it removes nothing.
+securityContext: {}
+pod:
+  securityContext: {}

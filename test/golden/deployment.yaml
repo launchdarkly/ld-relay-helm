@@ -30,6 +30,9 @@ spec:
       
       
       serviceAccountName: ld-relay-test
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: ld-relay
 
@@ -39,7 +42,13 @@ spec:
             - configMapRef:
                 name: ld-relay-test-config
           securityContext:
-            {}
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
           image: "launchdarkly/ld-relay:8.23.4"
           imagePullPolicy: IfNotPresent
           ports:

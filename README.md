@@ -33,6 +33,49 @@ For additional configuration, use the [Configuration options](#configuration-opt
 
 OCI artifacts of all LaunchDarkly Helm charts are available in [ghcr.io](https://github.com/orgs/launchdarkly/packages?q=helm-charts).
 
+## Security defaults
+
+The chart's default `pod.securityContext` and `securityContext` satisfy the Kubernetes [Pod Security Standards](https://kubernetes.io/docs/concepts/security/pod-security-standards/) `restricted` profile. The pod uses the `RuntimeDefault` seccomp profile. The Relay Proxy container sets `runAsNonRoot`, sets `allowPrivilegeEscalation: false` and drops all capabilities.
+
+The chart does not set `runAsUser`, `runAsGroup` or `fsGroup`, so the image decides which user the Relay Proxy runs as. This also lets platforms that assign UIDs, such as OpenShift, admit the pod.
+
+Helm merges your values with these defaults:
+
+- Setting `securityContext: {}` does not remove them.
+- To remove one default, set it to `null`, for example `securityContext.runAsNonRoot: null`.
+- To remove all of them, set both `securityContext: null` and `pod.securityContext: null`. This gives the behaviour of chart versions before 4.0.
+- Lists replace the default rather than merge with it. For example, `securityContext.capabilities.drop: [NET_RAW]` no longer drops `ALL`.
+- When this chart is a subchart, `null` in the parent chart's `values.yaml` does not remove a default. Pass the `null` with `-f` or `--set` instead.
+
+These container-level defaults do not apply to `relay.initContainers`. In a namespace that enforces `restricted`, give each init container its own `securityContext` with the same fields.
+
+### Upgrading to 4.0
+
+Chart versions before 4.0 set no security context. When you upgrade, check these cases:
+
+- **Custom images.** The image must run as a numeric, non-root UID. An image that runs as root, or that sets `USER` to a name, fails the `runAsNonRoot` check and the container does not start. The published `launchdarkly/ld-relay` images run as a numeric non-root UID.
+- **Settings that conflict with the defaults.** Your values merge with the defaults, so some settings now conflict. `securityContext.runAsUser: 0` conflicts with `runAsNonRoot: true`. `securityContext.privileged: true` and capabilities in `securityContext.capabilities.add` such as `SYS_ADMIN` conflict with `allowPrivilegeEscalation: false`. Remove the conflicting default with `null`.
+- **Pod-level seccomp profiles.** The container now sets `seccompProfile: RuntimeDefault`, which takes precedence over `pod.securityContext.seccompProfile`. If you set a different profile on the pod, set it on `securityContext.seccompProfile` as well.
+- **`helm upgrade --reuse-values`.** This keeps the values of your previous release, including its empty security contexts, so the new defaults do not apply. Use `--reset-then-reuse-values` (Helm 3.14 or later) or pass your values explicitly.
+
+To harden the pod further:
+
+- Set `securityContext.readOnlyRootFilesystem: true`. If you also use [offline mode](docs/examples/offline-mode.md), mount a writable volume at `/tmp`, because offline mode expands its archive there. Without it, the Relay Proxy does not start.
+
+    ```yaml
+    securityContext:
+      readOnlyRootFilesystem: true
+    relay:
+      extraVolumes:
+        - name: tmp
+          emptyDir: {}
+      extraVolumeMounts:
+        - name: tmp
+          mountPath: /tmp
+    ```
+
+- Set `automountServiceAccountToken: false`. The Relay Proxy does not call the Kubernetes API. Keep the token if another part of your setup reads it, for example Vault Agent with Kubernetes auth.
+
 ## Configuration options
 
 To customize this Helm chart, override the configuration options defined in the [values file](https://github.com/launchdarkly/ld-relay-helm/blob/main/values.yaml). The values file contains detailed documentation on each option.
@@ -62,11 +105,12 @@ Here's a summary of the available configuration options:
 | serviceAccount.create                         | bool    | `true`                                                       | Specifies whether a service account should be created                                                    |
 | serviceAccount.annotations                    | object  | `{}`                                                         | Annotations to add to the service account                                                                |
 | serviceAccount.name                           | string  | `""`                                                         | The name of the service account                                                                          |
+| automountServiceAccountToken                  | bool    | `null`                                                       | Pod automountServiceAccountToken. When unset, Kubernetes applies its default                             |
 | pod.annotations                               | object  | `{}`                                                         | Pod annotations                                                                                          |
 | pod.labels                                    | object  | `{}`                                                         | Pod labels                                                                                               |
-| pod.securityContext                           | object  | `{}`                                                         | Pod security context                                                                                     |
+| pod.securityContext                           | object  | `{seccompProfile: {type: RuntimeDefault}}`                   | Pod security context                                                                                     |
 | terminationGracePeriodSeconds                 | string  | `null`                                                       | Pod terminationGracePeriodSeconds                                                                        |
-| securityContext                               | object  | `{}`                                                         | Container security context                                                                               |
+| securityContext                               | object  | `{allowPrivilegeEscalation: false, capabilities: {drop: [ALL]}, runAsNonRoot: true, seccompProfile: {type: RuntimeDefault}}` | Container security context                                                                               |
 | service.type                                  | string  | `ClusterIP`                                                  | Kubernetes service type                                                                                  |
 | service.annotations                           | object  | `{}`                                                         | Annotations to add to the service                                                                        |
 | service.ports                                 | array   | `[{port: 8030, targetPort: 8030, protocol: TCP, name: api}]` | Service port mapping. Must include one port named `api`.                                                 |

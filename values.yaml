@@ -50,14 +50,28 @@ serviceAccount:
   # If not set and create is true, a name is generated using the fullname template
   name: ""
 
+# Optional automountServiceAccountToken setting for the relay pod.
+# When unset, Kubernetes applies its default (the token is mounted). The Relay Proxy
+# does not call the Kubernetes API, so you can set this to false unless another part
+# of your setup reads the token.
+automountServiceAccountToken: null
+
 pod:
   # Annotations to add to the pod.
   annotations: {}
   # Labels to add to the pod.
   labels: {}
   # Security context applied to the pod.
-  securityContext: {}
-    # fsGroup: 2000
+  # The default seccomp profile applies to every container in the pod, and the
+  # Pod Security Standards "restricted" profile requires it. runAsNonRoot is set on
+  # the relay container only, so the chart does not force init containers to run as
+  # non-root. The image sets the user, so the chart does not.
+  #
+  # Helm merges your values with these defaults, so {} does not remove them. To remove
+  # a default, set it to null. To remove all of them, set pod.securityContext to null.
+  securityContext:
+    seccompProfile:
+      type: RuntimeDefault
   # PriorityClassName to apply to the pod.
   priorityClassName: ""
   # DEPRECATED: Use pod.disruptionBudget instead. This will be removed in the next major version.
@@ -103,13 +117,23 @@ pod:
 # Optional termination grace period in seconds for graceful pod shutdown
 # terminationGracePeriodSeconds: 90
 
-securityContext: {}
-  # capabilities:
-  #   drop:
-  #   - ALL
+# Security context applied to the relay container.
+# These defaults are the container-level fields that the Pod Security Standards
+# "restricted" profile requires. To remove a default, set it to null. To remove all
+# of them, set securityContext to null.
+#
+# If you set readOnlyRootFilesystem to true and use offline mode, mount a writable
+# volume at /tmp with relay.extraVolumes and relay.extraVolumeMounts. Offline mode
+# expands its archive there, and the Relay Proxy does not start without it.
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
   # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
 
 service:
   type: ClusterIP

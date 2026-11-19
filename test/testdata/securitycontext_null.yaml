@@ -1,0 +1,4 @@
+# Removes every security context default, which gives the pre-4.0 behaviour.
+securityContext: null
+pod:
+  securityContext: null
