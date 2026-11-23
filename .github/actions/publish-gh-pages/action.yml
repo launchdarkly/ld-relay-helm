@@ -46,7 +46,7 @@ runs:
 
     - name: Publish to GitHub pages
       if: ${{ inputs.dry_run == 'false' }}
-      uses: launchdarkly/gh-actions/actions/publish-pages@publish-pages-v1.0.2
+      uses: launchdarkly/gh-actions/actions/publish-pages@publish-pages/v1.0.4
       with:
         docs_path: build
         github_token: ${{ inputs.token }}
