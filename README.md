@@ -33,6 +33,18 @@ For additional configuration, use the [Configuration options](#configuration-opt
 
 OCI artifacts of all LaunchDarkly Helm charts are available in [ghcr.io](https://github.com/orgs/launchdarkly/packages?q=helm-charts).
 
+## Kubernetes version support
+
+This chart follows the Kubernetes project's [support policy](https://kubernetes.io/releases/version-skew-policy/#supported-versions). We test the chart against the three newest Kubernetes minor versions and fix bugs that affect them. Each minor version gets this support for about 14 months, as it does upstream. The chart can work on older versions, but we do not test them or fix bugs that occur only on them.
+
+The chart's `kubeVersion` setting is a separate, lower floor. Helm refuses to install or upgrade the chart on a cluster older than this floor. The floor is the oldest Kubernetes version that Amazon EKS or Google GKE still supports, including their paid extended support. This keeps the chart installable on clusters that your provider still supports. We raise the floor only in a major chart release.
+
+| Chart version | Minimum Kubernetes version |
+|---------------|----------------------------|
+| 4.x           | 1.32                       |
+
+Without a cluster, `helm template` checks the floor against a default Kubernetes version built into Helm. If that default is older than the floor, pass your cluster's version with `--kube-version`.
+
 ## Security defaults
 
 The chart's default `pod.securityContext` and `securityContext` satisfy the Kubernetes [Pod Security Standards](https://kubernetes.io/docs/concepts/security/pod-security-standards/) `restricted` profile. The pod uses the `RuntimeDefault` seccomp profile. The Relay Proxy container sets `runAsNonRoot`, sets `allowPrivilegeEscalation: false` and drops all capabilities.
@@ -158,6 +170,10 @@ Chart 4.0 installs Relay Proxy v9 by default. Read the [Relay Proxy v9 changelog
 - The default readiness probe uses `/status` `expect` assertions. A pod becomes ready when it has at least one environment and every environment has finished initializing. It stays ready during a LaunchDarkly outage. The liveness probe still requests the plain `/status` endpoint.
 - The Prometheus exporter was removed from Relay v9, so the values file no longer shows a Prometheus port. Export metrics over OTLP instead.
 - The deprecated `pod.distruptionBudget` value is removed. Use `pod.disruptionBudget`.
+
+### Kubernetes version
+
+Chart 4.0 requires Kubernetes 1.32 or later. The templates no longer produce the older API versions of the HorizontalPodAutoscaler, PodDisruptionBudget and Ingress resources. On older clusters, stay on chart 3.x. For the policy, see [Kubernetes version support](#kubernetes-version-support).
 
 ### Security context
 

@@ -20,3 +20,55 @@ jobs:
 
       - name: Run quality control checks
         uses: ./.github/actions/ci
+
+  # Install the chart on the three newest Kubernetes minor versions. The README
+  # "Kubernetes version support" section states this policy. When a new minor
+  # version ships, add it here and remove the oldest one. Take each node image
+  # from the release notes of the kind version below.
+  install:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        node_image:
+          - kindest/node:v1.37.0@sha256:a1ed56cfb0e7b93589bdf97c8cd566405a265939e3620fc4f5de89adff580ae5
+          - kindest/node:v1.36.4@sha256:099e049362a1526b2db71494e1947aae99bd16290d7c895f2b7ea312e3cbfaed
+          - kindest/node:v1.35.8@sha256:07b2536e30b803ed61d1677a79df6115f798ce64c80f9e22f6ed45afd09323c0
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - uses: actions/checkout@v7
+      - uses: azure/setup-helm@2f5e7bc67f1f9972ab16657bb795f36d8f04de0e # v5.1.0
+
+      - uses: helm/kind-action@ea822c7bf1874f08e5a491df991c228edffc3376 # v1.15.2
+        with:
+          version: v0.33.0
+          node_image: ${{ matrix.node_image }}
+
+      # The SDK key is not valid. LaunchDarkly rejects it, the environment goes
+      # to OFF, and the default readiness probe then passes. This exercises the
+      # default probes without a real key. The optional resources are on so the
+      # API server validates their API versions.
+      - name: Install the chart
+        run: |
+          helm install relay . --wait --timeout 5m \
+            --set relay.environment.LD_ENV_ci=sdk-00000000-0000-0000-0000-000000000000 \
+            --set autoscaling.enabled=true \
+            --set pod.disruptionBudget.enabled=true \
+            --set pod.disruptionBudget.minAvailable=1 \
+            --set ingress.enabled=true \
+            --set 'ingress.hosts[0].host=relay.example.com' \
+            --set 'ingress.hosts[0].paths[0].path=/' \
+            --set 'ingress.hosts[0].paths[0].pathType=Prefix' \
+            --set 'ingress.hosts[0].paths[0].port=8030'
+
+      - name: Show cluster state
+        if: failure()
+        run: |
+          kubectl get all,ingress,pdb,hpa -o wide
+          kubectl describe pods
+          kubectl logs -l app.kubernetes.io/instance=relay --tail=100 || true
