@@ -42,13 +42,23 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- /*
+      The default securityContext makes the root filesystem read-only, so the
+      chart mounts a writable emptyDir at /tmp. Offline mode expands its archive
+      there. If relay.extraVolumeMounts already mounts something at /tmp, the
+      chart leaves /tmp to it.
+      */}}
+      {{- $user_tmp_mount := false }}
+      {{- range .Values.relay.extraVolumeMounts }}
+        {{- if eq (trimSuffix "/" (toString .mountPath)) "/tmp" }}
+          {{- $user_tmp_mount = true }}
+        {{- end }}
+      {{- end }}
       volumes:
       - name: {{ include "ld-relay.fullname" . }}-config
         configMap:
           name: {{ include "ld-relay.fullname" . }}-config
-      {{ $has_volumes := false }}
       {{- if .Values.relay.volume.definition }}
-        {{ $has_volumes = true }}
       - name: {{ include "ld-relay.name" . }}-volume
         {{- toYaml .Values.relay.volume.definition | nindent 8 }}
       {{- end }}
@@ -65,7 +75,6 @@ spec:
           sources:
             {{- range .Values.relay.secrets }}
               {{- if .volumePath }}
-                {{ $has_volumes = true }}
             - secret:
                 name: {{ .secretName }}
                 items:
@@ -76,6 +85,10 @@ spec:
       {{- end }}
       {{- with .Values.relay.extraVolumes }}
         {{- toYaml . | nindent 6 }}
+      {{- end }}
+      {{- if not $user_tmp_mount }}
+      - name: {{ include "ld-relay.fullname" . }}-tmp
+        emptyDir: {}
       {{- end }}
       serviceAccountName: {{ include "ld-relay.serviceAccountName" . }}
       {{- if not (kindIs "invalid" .Values.automountServiceAccountToken) }}
@@ -94,7 +107,6 @@ spec:
       {{- end }}
       containers:
         - name: {{ .Chart.Name }}
-          {{- if or $has_volumes .Values.relay.extraVolumeMounts }}
           volumeMounts:
             {{- if .Values.relay.volume.definition }}
             - name: {{ include "ld-relay.name" . }}-volume
@@ -108,7 +120,10 @@ spec:
             {{- with .Values.relay.extraVolumeMounts }}
               {{- toYaml . | nindent 12 }}
             {{- end }}
-          {{- end }}
+            {{- if not $user_tmp_mount }}
+            - name: {{ include "ld-relay.fullname" . }}-tmp
+              mountPath: /tmp
+            {{- end }}
 
           {{- if .Values.relay.command }}
           command:

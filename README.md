@@ -51,6 +51,26 @@ The chart's default `pod.securityContext` and `securityContext` satisfy the Kube
 
 The chart does not set `runAsUser`, `runAsGroup` or `fsGroup`, so the image decides which user the Relay Proxy runs as. This also lets platforms that assign UIDs, such as OpenShift, admit the pod.
 
+The chart also hardens the pod beyond the `restricted` profile:
+
+- **Read-only root filesystem.** The container sets `readOnlyRootFilesystem: true`. The chart mounts a writable `emptyDir` at `/tmp`, because [offline mode](docs/examples/offline-mode.md) expands its archive into a temporary directory there. In the Relay Proxy source, that is the only place Relay writes to its filesystem. Relay creates the directory under `TMPDIR` if it is set, so if you set `TMPDIR`, mount a writable volume at that path. To use your own volume at `/tmp`, for example one with a `sizeLimit` or `medium: Memory`, mount it with `relay.extraVolumes` and `relay.extraVolumeMounts`, and the chart does not add its own:
+
+    ```yaml
+    relay:
+      extraVolumes:
+        - name: tmp
+          emptyDir:
+            medium: Memory
+            sizeLimit: 256Mi
+      extraVolumeMounts:
+        - name: tmp
+          mountPath: /tmp
+    ```
+
+    If something else in your setup writes outside `/tmp`, such as a custom image, mount a writable volume at that path or set `securityContext.readOnlyRootFilesystem: false`.
+
+- **No service account token.** `automountServiceAccountToken` defaults to `false`, and the chart sets it on both the pod and the service account it creates. The Relay Proxy does not call the Kubernetes API. Set it to `true` if another part of your setup reads the token, for example Vault Agent with Kubernetes auth. Set it to `null` to leave the field unset, so that Kubernetes applies its default.
+
 Helm merges your values with these defaults:
 
 - Setting `securityContext: {}` does not remove them.
@@ -62,24 +82,6 @@ Helm merges your values with these defaults:
 These container-level defaults do not apply to `relay.initContainers`. In a namespace that enforces `restricted`, give each init container its own `securityContext` with the same fields.
 
 To upgrade from a chart version before 4.0, see [Upgrading to 4.0](#upgrading-to-40).
-
-To harden the pod further:
-
-- Set `securityContext.readOnlyRootFilesystem: true`. If you also use [offline mode](docs/examples/offline-mode.md), mount a writable volume at `/tmp`, because offline mode expands its archive there. Without it, the Relay Proxy does not start.
-
-    ```yaml
-    securityContext:
-      readOnlyRootFilesystem: true
-    relay:
-      extraVolumes:
-        - name: tmp
-          emptyDir: {}
-      extraVolumeMounts:
-        - name: tmp
-          mountPath: /tmp
-    ```
-
-- Set `automountServiceAccountToken: false`. The Relay Proxy does not call the Kubernetes API. Keep the token if another part of your setup reads it, for example Vault Agent with Kubernetes auth.
 
 ## Configuration options
 
@@ -110,12 +112,12 @@ Here's a summary of the available configuration options:
 | serviceAccount.create                         | bool    | `true`                                                       | Specifies whether a service account should be created                                                    |
 | serviceAccount.annotations                    | object  | `{}`                                                         | Annotations to add to the service account                                                                |
 | serviceAccount.name                           | string  | `""`                                                         | The name of the service account                                                                          |
-| automountServiceAccountToken                  | bool    | `null`                                                       | Pod automountServiceAccountToken. When unset, Kubernetes applies its default                             |
+| automountServiceAccountToken                  | bool    | `false`                                                      | automountServiceAccountToken for the pod and the service account. Set to `null` to leave it unset        |
 | pod.annotations                               | object  | `{}`                                                         | Pod annotations                                                                                          |
 | pod.labels                                    | object  | `{}`                                                         | Pod labels                                                                                               |
 | pod.securityContext                           | object  | `{seccompProfile: {type: RuntimeDefault}}`                   | Pod security context                                                                                     |
 | terminationGracePeriodSeconds                 | string  | `null`                                                       | Pod terminationGracePeriodSeconds                                                                        |
-| securityContext                               | object  | `{allowPrivilegeEscalation: false, capabilities: {drop: [ALL]}, runAsNonRoot: true, seccompProfile: {type: RuntimeDefault}}` | Container security context                                                                               |
+| securityContext                               | object  | `{allowPrivilegeEscalation: false, capabilities: {drop: [ALL]}, readOnlyRootFilesystem: true, runAsNonRoot: true, seccompProfile: {type: RuntimeDefault}}` | Container security context. The chart mounts a writable `emptyDir` at `/tmp` unless `relay.extraVolumeMounts` mounts one there |
 | service.type                                  | string  | `ClusterIP`                                                  | Kubernetes service type                                                                                  |
 | service.annotations                           | object  | `{}`                                                         | Annotations to add to the service                                                                        |
 | service.ports                                 | array   | `[{port: 8030, targetPort: 8030, protocol: TCP, name: api}]` | Service port mapping. Must include one port named `api`.                                                 |
@@ -182,6 +184,8 @@ Chart versions before 4.0 set no security context. When you upgrade, check these
 - **Custom images.** The image must run as a numeric, non-root UID. An image that runs as root, or that sets `USER` to a name, fails the `runAsNonRoot` check and the container does not start. The published `launchdarkly/ld-relay` images run as a numeric non-root UID.
 - **Settings that conflict with the defaults.** Your values merge with the defaults, so some settings now conflict. `securityContext.runAsUser: 0` conflicts with `runAsNonRoot: true`. `securityContext.privileged: true` and capabilities in `securityContext.capabilities.add` such as `SYS_ADMIN` conflict with `allowPrivilegeEscalation: false`. Remove the conflicting default with `null`.
 - **Pod-level seccomp profiles.** The container now sets `seccompProfile: RuntimeDefault`, which takes precedence over `pod.securityContext.seccompProfile`. If you set a different profile on the pod, set it on `securityContext.seccompProfile` as well.
+- **Read-only root filesystem.** The container now sets `readOnlyRootFilesystem: true`, and the chart mounts a writable `emptyDir` at `/tmp`. If your setup writes anywhere else, for example a custom image or a `relay.command` override that writes files, mount a writable volume at that path or set `securityContext.readOnlyRootFilesystem: false`. If you already mount a volume at `/tmp` with `relay.extraVolumeMounts`, the chart uses yours and does not add its own.
+- **Service account token.** The chart now sets `automountServiceAccountToken: false` on the pod and on the service account it creates, so the token is no longer mounted at `/var/run/secrets/kubernetes.io/serviceaccount`. If a sidecar, an init container or another part of your setup reads the token, for example Vault Agent with Kubernetes auth, set `automountServiceAccountToken: true`.
 - **`helm upgrade --reuse-values`.** This keeps the values of your previous release, including its empty security contexts, so the new defaults do not apply. Use `--reset-then-reuse-values` (Helm 3.14 or later) or pass your values explicitly.
 
 ## Learn more

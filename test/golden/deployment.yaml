@@ -28,13 +28,18 @@ spec:
         configMap:
           name: ld-relay-test-config
       
-      
+      - name: ld-relay-test-tmp
+        emptyDir: {}
       serviceAccountName: ld-relay-test
+      automountServiceAccountToken: false
       securityContext:
         seccompProfile:
           type: RuntimeDefault
       containers:
         - name: ld-relay
+          volumeMounts:
+            - name: ld-relay-test-tmp
+              mountPath: /tmp
 
           env:
 
@@ -46,6 +51,7 @@ spec:
             capabilities:
               drop:
               - ALL
+            readOnlyRootFilesystem: true
             runAsNonRoot: true
             seccompProfile:
               type: RuntimeDefault

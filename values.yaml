@@ -55,11 +55,12 @@ serviceAccount:
   # If not set and create is true, a name is generated using the fullname template
   name: ""
 
-# Optional automountServiceAccountToken setting for the relay pod.
-# When unset, Kubernetes applies its default (the token is mounted). The Relay Proxy
-# does not call the Kubernetes API, so you can set this to false unless another part
-# of your setup reads the token.
-automountServiceAccountToken: null
+# Sets automountServiceAccountToken on the relay pod and on the service account the
+# chart creates. The Relay Proxy does not call the Kubernetes API, so by default the
+# token is not mounted. Set this to true if another part of your setup reads the
+# token, for example Vault Agent with Kubernetes auth. Set it to null to leave the
+# field unset, so that Kubernetes applies its default (the token is mounted).
+automountServiceAccountToken: false
 
 pod:
   # Annotations to add to the pod.
@@ -113,21 +114,22 @@ pod:
 
 # Security context applied to the relay container.
 # These defaults are the container-level fields that the Pod Security Standards
-# "restricted" profile requires. To remove a default, set it to null. To remove all
-# of them, set securityContext to null.
+# "restricted" profile requires, plus a read-only root filesystem. To remove a
+# default, set it to null. To remove all of them, set securityContext to null.
 #
-# If you set readOnlyRootFilesystem to true and use offline mode, mount a writable
-# volume at /tmp with relay.extraVolumes and relay.extraVolumeMounts. Offline mode
-# expands its archive there, and the Relay Proxy does not start without it.
+# The chart always mounts a writable emptyDir at /tmp, because offline mode expands
+# its archive there. To use a different volume at /tmp (for example, one with a
+# sizeLimit or medium: Memory), mount it with relay.extraVolumes and
+# relay.extraVolumeMounts. The chart then does not add its own.
 securityContext:
   allowPrivilegeEscalation: false
   capabilities:
     drop:
       - ALL
+  readOnlyRootFilesystem: true
   runAsNonRoot: true
   seccompProfile:
     type: RuntimeDefault
-  # readOnlyRootFilesystem: true
 
 service:
   type: ClusterIP
