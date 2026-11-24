@@ -4,6 +4,32 @@ Change log
 All notable changes to the LaunchDarkly Relay Proxy Helm Chart will be documented in this file. This project adheres to [Semantic Versioning](https://semver.org).
 
 
+## [4.0.0](https://github.com/launchdarkly/ld-relay-helm/compare/3.11.4...4.0.0) (2026-11-24)
+
+
+### ⚠ BREAKING CHANGES
+
+* Require Kubernetes 1.32 or later ([#170](https://github.com/launchdarkly/ld-relay-helm/issues/170))
+* Run the Relay Proxy as uid 65532 instead of uid 1000
+* Make pods ready only after every environment initializes, using the /status expect checks
+* Remove the deprecated pod.distruptionBudget value
+* Install Relay Proxy v9, which uses a distroless image with no shell ([#165](https://github.com/launchdarkly/ld-relay-helm/issues/165))
+* Default the security context to the fields the restricted Pod Security Standard requires ([#155](https://github.com/launchdarkly/ld-relay-helm/issues/155))
+
+### Features
+
+* Default the security context to the fields the restricted Pod Security Standard requires ([#155](https://github.com/launchdarkly/ld-relay-helm/issues/155)) ([d5799e1](https://github.com/launchdarkly/ld-relay-helm/commit/d5799e18fbe41ed2cccbfda3ee10747b840b4ac6))
+* Install Relay Proxy v9, which uses a distroless image with no shell ([#165](https://github.com/launchdarkly/ld-relay-helm/issues/165)) ([cbc3a41](https://github.com/launchdarkly/ld-relay-helm/commit/cbc3a41d1c7e32979997fbec308fd819d8a1fc39))
+* Make pods ready only after every environment initializes, using the /status expect checks ([cbc3a41](https://github.com/launchdarkly/ld-relay-helm/commit/cbc3a41d1c7e32979997fbec308fd819d8a1fc39))
+* Remove the deprecated pod.distruptionBudget value ([cbc3a41](https://github.com/launchdarkly/ld-relay-helm/commit/cbc3a41d1c7e32979997fbec308fd819d8a1fc39))
+* Require Kubernetes 1.32 or later ([#170](https://github.com/launchdarkly/ld-relay-helm/issues/170)) ([a7e934e](https://github.com/launchdarkly/ld-relay-helm/commit/a7e934e2146964b59f4e2622d0779aa20437f3f6))
+* Run the Relay Proxy as uid 65532 instead of uid 1000 ([cbc3a41](https://github.com/launchdarkly/ld-relay-helm/commit/cbc3a41d1c7e32979997fbec308fd819d8a1fc39))
+
+
+### Bug Fixes
+
+* Bump default relay proxy version from 9.0.1 to 9.1.0 ([#166](https://github.com/launchdarkly/ld-relay-helm/issues/166)) ([f84a3d5](https://github.com/launchdarkly/ld-relay-helm/commit/f84a3d5ce9103490626fd01f06f382e8aeb3ee13))
+
 ## [3.11.4](https://github.com/launchdarkly/ld-relay-helm/compare/3.11.3...3.11.4) (2026-11-19)
 
 
