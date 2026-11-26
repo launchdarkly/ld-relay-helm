@@ -117,16 +117,17 @@ Success! Now you should have a working installation of the Relay Proxy, initiall
 
 ## With a read-only root filesystem
 
-Offline mode expands the archive into a temporary directory under `/tmp`. If you set `securityContext.readOnlyRootFilesystem: true`, mount a writable volume at `/tmp`, or the Relay Proxy does not start:
+The chart's default `securityContext` makes the root filesystem read-only. Offline mode expands the archive into a temporary directory under `/tmp`, so the chart mounts a writable `emptyDir` at `/tmp` and offline mode works without extra configuration.
+
+The archive is expanded in full, so the `/tmp` volume needs room for the uncompressed archive. To limit its size or keep it in memory, mount your own volume at `/tmp`. The chart then does not add its own:
 
 ```yaml
 # values.yaml
-securityContext:
-    readOnlyRootFilesystem: true
 relay:
     extraVolumes:
         - name: tmp
-          emptyDir: {}
+          emptyDir:
+              sizeLimit: 256Mi
     extraVolumeMounts:
         - name: tmp
           mountPath: /tmp
