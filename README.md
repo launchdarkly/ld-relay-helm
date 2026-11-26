@@ -77,7 +77,7 @@ Helm merges your values with these defaults:
 - To remove one default, set it to `null`, for example `securityContext.runAsNonRoot: null`.
 - To remove all of them, set both `securityContext: null` and `pod.securityContext: null`. This gives the behaviour of chart versions before 4.0.
 - Lists replace the default rather than merge with it. For example, `securityContext.capabilities.drop: [NET_RAW]` no longer drops `ALL`.
-- When this chart is a subchart, `null` in the parent chart's `values.yaml` does not remove a default. Pass the `null` with `-f` or `--set` instead.
+- When this chart is a subchart, `null` in the parent chart's `values.yaml` removes a default with Helm 3.17.1 or later and Helm 4.0 to 4.1, but not with older Helm 3 releases or Helm 4.2 and later ([helm/helm#32132](https://github.com/helm/helm/issues/32132)). There, pass the `null` with `-f` or `--set` instead.
 
 These container-level defaults do not apply to `relay.initContainers`. In a namespace that enforces `restricted`, give each init container its own `securityContext` with the same fields.
 
